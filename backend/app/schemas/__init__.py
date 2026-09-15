@@ -1,0 +1,1 @@
+"""API response schemas (Pydantic v2 models)."""

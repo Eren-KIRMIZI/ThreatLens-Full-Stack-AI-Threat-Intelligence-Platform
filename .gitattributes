@@ -1,2 +1,44 @@
-# Auto detect text files and perform LF normalization
+# Normalize line endings to LF in the repository.
+# Checkout keeps LF on all platforms (git converts CRLF on Windows if configured).
 * text=auto
+
+# Explicit text files — always LF in the repo and on checkout.
+*.md text eol=lf
+*.py text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.ini text eol=lf
+*.env.example text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# Windows shell scripts: keep CRLF so cmd/PowerShell behave (git normalizes in the repo).
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binaries must never be touched by normalization.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.zip binary
+*.db binary
+
+# Linguist: the design doc is documentation, not code.
+ThreatLens*.md linguist-documentation
+
+# Language detection hints.
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+*.py linguist-language=Python

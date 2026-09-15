@@ -1,0 +1,107 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/jetbrains-mono';
+
+@theme {
+  /* Surfaces — near-black / charcoal scale */
+  --color-bg: #0a0c10;
+  --color-surface: #0f1217;
+  --color-surface-2: #141821;
+  --color-surface-3: #1a1f2a;
+  --color-surface-4: #212734;
+
+  /* Hairlines */
+  --color-border: #1e2430;
+  --color-border-strong: #2a3140;
+
+  /* Ink */
+  --color-ink: #e6eaf0;
+  --color-ink-2: #9aa5b5;
+  --color-ink-3: #5c6675;
+
+  /* Brand accent — single signal color */
+  --color-accent: #38bdf8;
+  --color-accent-strong: #7dd3fc;
+
+  /* Severity */
+  --color-low: #34d399;
+  --color-moderate: #a3e635;
+  --color-elevated: #fbbf24;
+  --color-high: #fb923c;
+  --color-critical: #fb7185;
+  --color-clean: #34d399;
+  --color-suspicious: #fbbf24;
+
+  --font-sans:
+    'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg font-sans text-ink antialiased;
+    background-image: radial-gradient(
+        1200px 480px at 85% -10%,
+        color-mix(in srgb, var(--color-accent) 5%, transparent),
+        transparent 60%
+      ),
+      radial-gradient(
+        900px 420px at -10% 110%,
+        color-mix(in srgb, var(--color-accent-dim, #0ea5e9) 4%, transparent),
+        transparent 55%
+      );
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-4);
+    border-radius: 8px;
+    border: 2px solid var(--color-bg);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong);
+  }
+}
+
+@layer components {
+  /* Card surface */
+  .panel {
+    @apply rounded-xl border border-border bg-surface-2;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+
+  /* Subtle glass surface for sticky chrome */
+  .glass {
+    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* Eyebrow / section label */
+  .eyebrow {
+    @apply font-mono text-[11px] font-medium tracking-[0.14em] text-ink-3 uppercase;
+  }
+
+  /* Hash / indicator primitives */
+  .mono {
+    @apply font-mono;
+  }
+}
