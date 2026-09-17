@@ -1,5 +1,8 @@
 import {
+  BellRing,
+  Boxes,
   FileText,
+  FolderOpen,
   History,
   LayoutDashboard,
   Radar,
@@ -14,6 +17,9 @@ const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/analyze', label: 'Analyze', icon: Radar },
   { to: '/history', label: 'History', icon: History },
+  { to: '/iocs', label: 'IOC Inventory', icon: Boxes },
+  { to: '/investigations', label: 'Investigations', icon: FolderOpen },
+  { to: '/watchlist', label: 'Watchlist', icon: BellRing },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/settings', label: 'Settings', icon: Settings2 },
 ]

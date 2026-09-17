@@ -139,6 +139,16 @@ class VirusTotalService:
     # Public operations
     # ------------------------------------------------------------------ #
 
+    async def ping(self) -> bool:
+        """Cheap auth/connectivity probe against the VirusTotal API."""
+        try:
+            await self._get("/users/me")
+            return True
+        except ConfigurationError:
+            raise
+        except Exception:
+            return False
+
     async def get_file(self, hash_value: str) -> dict[str, Any]:
         """Fetch the file report object's top-level data node."""
         data = await self._get(f"/files/{hash_value}")

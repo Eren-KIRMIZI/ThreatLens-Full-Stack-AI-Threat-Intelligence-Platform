@@ -53,6 +53,12 @@ class Settings(BaseSettings):
     # Cache
     cache_ttl_seconds: int = 3600
 
+    # Scheduler (0 disables the background watchlist rescan loop)
+    watchlist_rescan_interval_seconds: int = 0
+
+    # RBAC (opt-in; clients then send X-ThreatLens-Role: viewer|analyst|admin)
+    rbac_enabled: bool = False
+
     # Uploads
     max_upload_size_mb: int = 32
 

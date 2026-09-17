@@ -13,6 +13,7 @@ from app.core.config import get_settings
 from app.core.database import Database
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import setup_logging
+from app.services.rescan_scheduler import start_scheduler, stop_scheduler
 from app.services.virustotal_service import VirusTotalService
 
 settings = get_settings()
@@ -27,7 +28,9 @@ async def lifespan(application: FastAPI):
         await database.create_tables()
     application.state.database = database
     application.state.virustotal_service = VirusTotalService()
+    await start_scheduler(application)
     yield
+    await stop_scheduler()
     names = (
         "virustotal_service",
         "openrouter_service",

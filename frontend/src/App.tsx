@@ -6,8 +6,11 @@ import { Analyze } from './pages/Analyze'
 import { Dashboard } from './pages/Dashboard'
 import { GraphPage } from './pages/Graph'
 import { HistoryPage } from './pages/History'
+import { InvestigationsPage } from './pages/Investigations'
+import { IOCsPage } from './pages/IOCs'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
+import { WatchlistPage } from './pages/Watchlist'
 
 const router = createBrowserRouter([
   {
@@ -19,6 +22,9 @@ const router = createBrowserRouter([
       { path: 'analysis/:analysisId', element: <AnalysisDetail /> },
       { path: 'analysis/:analysisId/graph', element: <GraphPage /> },
       { path: 'history', element: <HistoryPage /> },
+      { path: 'iocs', element: <IOCsPage /> },
+      { path: 'investigations', element: <InvestigationsPage /> },
+      { path: 'watchlist', element: <WatchlistPage /> },
       { path: 'reports', element: <Reports /> },
       { path: 'settings', element: <Settings /> },
     ],

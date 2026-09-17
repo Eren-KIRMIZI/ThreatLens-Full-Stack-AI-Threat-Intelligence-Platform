@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Activity,
   ArrowRight,
   BarChart3,
+  CalendarRange,
+  Search,
+  Server,
   ShieldCheck,
   ShieldQuestion,
   Sparkles,
@@ -24,8 +28,15 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { LevelBadge } from '../components/analysis/LevelBadge'
 import { formatDate, shortId, statsTotal } from '../components/analysis/level'
 import { useHistoryPage } from '../hooks/useAnalyses'
+import { useDigest, useGlobalSearch, useProviderHealth } from '../hooks/useIntel'
 import { guessIndicatorType } from '../utils/validate'
 import type { ThreatLevel } from '../types'
+
+const DIGEST_WINDOWS = [
+  { value: 'day', label: 'Today' },
+  { value: 'week', label: 'This week' },
+  { value: 'month', label: 'This month' },
+]
 
 const LEVEL_COLORS: Record<ThreatLevel, string> = {
   clean: '#34d399',
@@ -58,6 +69,11 @@ function toDistribution(
 export function Dashboard() {
   const navigate = useNavigate()
   const history = useHistoryPage({ filter: 'all', limit: 50 })
+  const [digestWindow, setDigestWindow] = useState('week')
+  const [searchQuery, setSearchQuery] = useState('')
+  const digest = useDigest(digestWindow)
+  const search = useGlobalSearch(searchQuery)
+  const providers = useProviderHealth()
 
   const items = history.data?.items ?? []
   const total = history.data?.total ?? 0
@@ -248,6 +264,146 @@ export function Dashboard() {
                 </li>
               ))}
             </ul>
+          )}
+        </Panel>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panel
+          eyebrow="Global search"
+          title="Find anything"
+          action={<Search className="h-4 w-4 text-ink-3" aria-hidden />}
+        >
+          <input
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Indicator, IOC or note…"
+            spellCheck={false}
+            className="h-10 w-full rounded-lg border border-border bg-surface-3 px-3 text-[13px] text-ink placeholder:text-ink-3 focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+          />
+          <div className="mt-3">
+            {searchQuery.trim().length < 2 ? (
+              <p className="text-[12.5px] text-ink-3">
+                Type at least two characters to search analyses, IOCs and cases.
+              </p>
+            ) : search.isLoading ? (
+              <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
+                <Spinner />
+                Searching…
+              </div>
+            ) : search.data && search.data.results.length > 0 ? (
+              <ul className="max-h-64 space-y-1.5 overflow-y-auto">
+                {search.data.results.slice(0, 8).map((result) => (
+                  <li key={`${result.kind}-${result.id}`}>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        result.kind === 'analysis'
+                          ? navigate(`/analysis/${result.id}`)
+                          : navigate('/iocs')
+                      }
+                      className="group w-full rounded-lg border border-border bg-surface px-3 py-2 text-left transition-colors hover:bg-surface-2"
+                    >
+                      <p className="truncate font-mono text-[12px] text-ink group-hover:text-accent-strong">
+                        {result.title}
+                      </p>
+                      <p className="truncate text-[11px] text-ink-3">
+                        {result.kind} · {result.subtitle}
+                      </p>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-[12.5px] text-ink-3">No matches.</p>
+            )}
+          </div>
+        </Panel>
+
+        <Panel
+          eyebrow="Intelligence digest"
+          title="Period summary"
+          action={<CalendarRange className="h-4 w-4 text-ink-3" aria-hidden />}
+        >
+          <div className="mb-3 flex gap-1">
+            {DIGEST_WINDOWS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setDigestWindow(option.value)}
+                className={`rounded-md px-2.5 py-1 text-[12px] font-medium transition-colors ${
+                  digestWindow === option.value
+                    ? 'bg-surface-4 text-ink'
+                    : 'text-ink-2 hover:text-ink'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {digest.isLoading ? (
+            <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
+              <Spinner />
+              Building digest…
+            </div>
+          ) : (
+            <ul className="space-y-2">
+              {(digest.data?.sections ?? []).map((section) => (
+                <li
+                  key={section.label}
+                  className="flex items-center justify-between border-b border-border/60 pb-2 last:border-0"
+                >
+                  <span className="text-[12.5px] text-ink-2">
+                    {section.label}
+                  </span>
+                  <span className="font-mono text-[13px] tabular-nums text-ink">
+                    {section.value}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+
+        <Panel
+          eyebrow="Enrichment"
+          title="Provider health"
+          action={<Server className="h-4 w-4 text-ink-3" aria-hidden />}
+        >
+          {providers.isLoading ? (
+            <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
+              <Spinner />
+              Loading…
+            </div>
+          ) : providers.data && providers.data.rows.length > 0 ? (
+            <ul className="space-y-1.5">
+              {providers.data.rows.map((row) => (
+                <li
+                  key={row.provider}
+                  className="flex items-center justify-between text-[12.5px]"
+                >
+                  <span className="flex items-center gap-2 text-ink-2">
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        row.ok ? 'bg-ok' : 'bg-critical'
+                      }`}
+                    />
+                    <span className="font-mono">{row.provider}</span>
+                  </span>
+                  <span className="text-ink-3">
+                    {row.availability != null
+                      ? `${row.availability}%`
+                      : row.checks != null
+                        ? `${row.checks} checks`
+                        : '—'}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[12.5px] text-ink-3">
+              No enrichment activity recorded yet.
+            </p>
           )}
         </Panel>
       </div>

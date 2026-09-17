@@ -10,6 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.core.database import get_db_session
 from app.repositories.analysis_repository import AnalysisRepository
+from app.repositories.investigation_repository import InvestigationRepository
+from app.repositories.registry_repository import RegistryRepository
+from app.repositories.watchlist_repository import WatchlistRepository
 from app.services.ai_service import AIService
 from app.services.analysis_service import AnalysisService
 from app.services.enrichment_service import EnrichmentService
@@ -66,9 +69,31 @@ async def get_analysis_repository(
     return AnalysisRepository(session)
 
 
+async def get_registry_repository(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> RegistryRepository:
+    """Build the IOC-registry repository bound to the request session."""
+    return RegistryRepository(session)
+
+
+async def get_investigation_repository(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> InvestigationRepository:
+    """Build the investigation repository bound to the request session."""
+    return InvestigationRepository(session)
+
+
+async def get_watchlist_repository(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> WatchlistRepository:
+    """Build the watchlist/alert repository bound to the request session."""
+    return WatchlistRepository(session)
+
+
 async def get_analysis_service(
     request: Request,
     repository: Annotated[AnalysisRepository, Depends(get_analysis_repository)],
+    registry: Annotated[RegistryRepository, Depends(get_registry_repository)],
     ai_service: Annotated[AIService, Depends(get_ai_service)],
 ) -> AnalysisService:
     return AnalysisService(
@@ -76,4 +101,5 @@ async def get_analysis_service(
         repository,
         ai_service,
         enrichment=get_enrichment_service(request),
+        registry=registry,
     )

@@ -1,5 +1,15 @@
+import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, Network, RefreshCw, Sparkles } from 'lucide-react'
+import {
+  ArrowLeft,
+  Download,
+  FileCode2,
+  Network,
+  Pin,
+  RefreshCw,
+  Sparkles,
+  Tag,
+} from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { PageHeader } from '../components/ui/PageHeader'
@@ -9,8 +19,24 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Spinner } from '../components/ui/Spinner'
 import { AnalysisResultView } from '../components/analysis/AnalysisResultView'
 import { AiAnalysisView } from '../components/analysis/AiAnalysisView'
-import { enrichWithAi, reportPdfUrl } from '../services/api'
+import { formatDate } from '../components/analysis/level'
+import {
+  analysisJsonUrl,
+  enrichWithAi,
+  reportPdfUrl,
+  sigmaUrl,
+  stixUrl,
+  yaraUrl,
+} from '../services/api'
 import { useAnalysis } from '../hooks/useAnalyses'
+import {
+  useAddNote,
+  useAddTag,
+  useNotes,
+  usePinned,
+  useSetPinned,
+  useTags,
+} from '../hooks/useIntel'
 
 export function AnalysisDetail() {
   const { analysisId = '' } = useParams()
@@ -18,6 +44,17 @@ export function AnalysisDetail() {
   const queryClient = useQueryClient()
 
   const analysis = useAnalysis(analysisId)
+  const pinned = usePinned()
+  const setPinned = useSetPinned(analysisId)
+  const tags = useTags(analysisId)
+  const addTag = useAddTag(analysisId)
+  const notes = useNotes(analysisId)
+  const addNote = useAddNote(analysisId)
+
+  const [tagInput, setTagInput] = useState('')
+  const [noteInput, setNoteInput] = useState('')
+
+  const isPinned = (pinned.data ?? []).includes(analysisId)
 
   const enrich = useMutation({
     mutationFn: () => enrichWithAi(analysisId),
@@ -35,6 +72,16 @@ export function AnalysisDetail() {
         description="Full intelligence portfolio for a single investigation."
         action={
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              disabled={!analysisId}
+              onClick={() => setPinned.mutate(!isPinned)}
+            >
+              <Pin
+                className={`h-4 w-4 ${isPinned ? 'fill-current text-accent' : ''}`}
+              />
+              {isPinned ? 'Pinned' : 'Pin'}
+            </Button>
             <Button
               variant="secondary"
               disabled={!analysis.data}
@@ -93,6 +140,134 @@ export function AnalysisDetail() {
         analysis.data && (
           <>
             <AnalysisResultView result={analysis.data} />
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Panel eyebrow="Exports" title="Take the intelligence with you">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      window.open(analysisJsonUrl(analysisId), '_blank')
+                    }
+                  >
+                    <Download className="h-4 w-4" />
+                    JSON
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(stixUrl(analysisId), '_blank')}
+                  >
+                    <FileCode2 className="h-4 w-4" />
+                    STIX 2.1
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(yaraUrl(analysisId), '_blank')}
+                  >
+                    <FileCode2 className="h-4 w-4" />
+                    YARA
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => window.open(sigmaUrl(analysisId), '_blank')}
+                  >
+                    <FileCode2 className="h-4 w-4" />
+                    Sigma
+                  </Button>
+                </div>
+                <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
+                  STIX bundles, YARA and Sigma rules are generated from the
+                  stored evidence — ready for your SIEM or detection pipeline.
+                </p>
+              </Panel>
+
+              <Panel eyebrow="Analyst workspace" title="Tags & notes">
+                <div className="space-y-4">
+                  <div>
+                    <span className="eyebrow">Tags</span>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                      {(tags.data ?? []).map((tag) => (
+                        <span
+                          key={tag}
+                          className="rounded-md border border-border-strong bg-surface-3 px-2 py-0.5 text-[11.5px] font-medium text-ink-2"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                      {(tags.data ?? []).length === 0 && (
+                        <span className="text-[12px] text-ink-3">
+                          No tags yet.
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <input
+                        value={tagInput}
+                        onChange={(event) => setTagInput(event.target.value)}
+                        placeholder="Add tag…"
+                        className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-surface-3 px-3 text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
+                      />
+                      <Button
+                        variant="secondary"
+                        disabled={!tagInput.trim() || addTag.isPending}
+                        onClick={() =>
+                          addTag.mutate(tagInput.trim(), {
+                            onSuccess: () => setTagInput(''),
+                          })
+                        }
+                      >
+                        <Tag className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="eyebrow">Notes</span>
+                    <ul className="mt-2 space-y-2">
+                      {(notes.data ?? []).map((note) => (
+                        <li
+                          key={note.id}
+                          className="rounded-lg border border-border bg-surface px-3 py-2"
+                        >
+                          <p className="text-[12.5px] leading-relaxed text-ink-2">
+                            {note.body}
+                          </p>
+                          <p className="mt-1 text-[11px] text-ink-3">
+                            {note.author} · {formatDate(note.created_at)}
+                          </p>
+                        </li>
+                      ))}
+                      {(notes.data ?? []).length === 0 && (
+                        <li className="text-[12px] text-ink-3">
+                          No analyst notes yet.
+                        </li>
+                      )}
+                    </ul>
+                    <textarea
+                      value={noteInput}
+                      onChange={(event) => setNoteInput(event.target.value)}
+                      rows={2}
+                      placeholder="Add a note for the team…"
+                      className="mt-2 w-full rounded-lg border border-border bg-surface-3 px-3 py-2 text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
+                    />
+                    <Button
+                      variant="secondary"
+                      className="mt-2"
+                      disabled={!noteInput.trim() || addNote.isPending}
+                      onClick={() =>
+                        addNote.mutate(
+                          { author: 'analyst', body: noteInput.trim() },
+                          { onSuccess: () => setNoteInput('') },
+                        )
+                      }
+                    >
+                      Add note
+                    </Button>
+                  </div>
+                </div>
+              </Panel>
+            </div>
+
             {!analysis.data.ai && (
               <Panel
                 eyebrow="AI interpretation"
