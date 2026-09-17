@@ -16,9 +16,12 @@ from app.repositories.analysis_repository import AnalysisRepository
 from app.schemas.analysis import AnalysisResult
 from app.services import normalizer
 from app.services.ai_service import AIService
+from app.services.enrichment_service import EnrichmentService
+from app.services.providers.virustotal import evidence_from_analysis
 from app.services.scoring import score_analysis
 from app.services.virustotal_service import VirusTotalService
 from app.utils.hashing import compute_hashes
+from app.utils.ioc import canonical_value
 from app.utils.validators import sanitize_filename
 
 logger = get_logger(__name__)
@@ -30,10 +33,35 @@ class AnalysisService:
         virustotal: VirusTotalService,
         repository: AnalysisRepository,
         ai_service: AIService,
+        enrichment: EnrichmentService | None = None,
     ) -> None:
         self._virustotal = virustotal
         self._repository = repository
         self._ai_service = ai_service
+        self._enrichment = enrichment
+
+    async def _apply_enrichment(self, result: AnalysisResult) -> AnalysisResult:
+        """Attach multi-provider enrichment (with seeded VirusTotal evidence)."""
+        if self._enrichment is None:
+            return result
+        try:
+            rescan_count = await self._repository.count_for_indicator(
+                result.indicator, result.indicator_type
+            )
+            result.enrichment = await self._enrichment.enrich(
+                result.indicator_type,
+                result.indicator,
+                seeded_vt=evidence_from_analysis(result),
+                rescan_count=rescan_count,
+            )
+        except Exception:
+            # Enrichment is additive, never fail a core analysis because of it.
+            logger.warning(
+                "enrichment failed, continuing with core result",
+                indicator=result.indicator,
+                indicator_type=result.indicator_type,
+            )
+        return result
 
     async def _apply_ai(self, result: AnalysisResult) -> AnalysisResult:
         """Attach the evidence-based AI interpretation to a result."""
@@ -75,6 +103,18 @@ class AnalysisService:
             if result.threat_score is None:
                 # Backfill rows written before scoring existed (dev data).
                 result.threat_score, result.threat_level = score_analysis(result)
+            if result.enrichment is None:
+                # Backfill rows stored before multi-provider enrichment existed.
+                result = await self._apply_enrichment(result)
+                try:
+                    await self._repository.update_payload(
+                        result.analysis_id, result.model_dump(mode="json")
+                    )
+                except Exception:
+                    logger.warning(
+                        "failed to attach enrichment to stored analysis",
+                        analysis_id=result.analysis_id,
+                    )
             if not with_ai or result.ai is not None:
                 return result
             result = await self._apply_ai(result)
@@ -92,6 +132,7 @@ class AnalysisService:
 
         result = await fetch_and_build()
         result.threat_score, result.threat_level = score_analysis(result)
+        result = await self._apply_enrichment(result)
         if with_ai:
             result = await self._apply_ai(result)
         await self._persist(result)

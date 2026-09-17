@@ -4,6 +4,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { AnalysisDetail } from './pages/AnalysisDetail'
 import { Analyze } from './pages/Analyze'
 import { Dashboard } from './pages/Dashboard'
+import { GraphPage } from './pages/Graph'
 import { HistoryPage } from './pages/History'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: 'analyze', element: <Analyze /> },
       { path: 'analysis/:analysisId', element: <AnalysisDetail /> },
+      { path: 'analysis/:analysisId/graph', element: <GraphPage /> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'reports', element: <Reports /> },
       { path: 'settings', element: <Settings /> },

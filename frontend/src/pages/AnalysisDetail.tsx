@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, RefreshCw, Sparkles } from 'lucide-react'
+import { ArrowLeft, Download, Network, RefreshCw, Sparkles } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { PageHeader } from '../components/ui/PageHeader'
@@ -35,6 +35,17 @@ export function AnalysisDetail() {
         description="Full intelligence portfolio for a single investigation."
         action={
           <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              disabled={!analysis.data}
+              onClick={() =>
+                analysis.data &&
+                navigate(`/analysis/${analysis.data.analysis_id}/graph`)
+              }
+            >
+              <Network className="h-4 w-4" />
+              Graph
+            </Button>
             <Button
               variant="secondary"
               disabled={!analysis.data}

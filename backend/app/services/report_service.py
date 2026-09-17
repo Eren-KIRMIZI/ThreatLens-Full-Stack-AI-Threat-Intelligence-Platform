@@ -207,6 +207,42 @@ def build_report(result: AnalysisResult) -> ReportDocument:
         )
     )
 
+    enrichment = result.enrichment
+    if enrichment:
+        conf_rows: list[ReportRow] = []
+        confidence = enrichment.confidence
+        if confidence:
+            conf_rows.append(
+                ReportRow(
+                    label="Multi-source confidence",
+                    value=f"{confidence.overall}/100 ({confidence.verdict})",
+                )
+            )
+            conf_rows.append(
+                ReportRow(
+                    label="Per-source breakdown",
+                    value=", ".join(
+                        f"{source.source}: {source.score}" for source in confidence.sources
+                    )
+                    or "—",
+                )
+            )
+            for reason in confidence.reasons[:8]:
+                conf_rows.append(ReportRow(label="Signal", value=reason))
+        conf_rows.append(
+            ReportRow(
+                label="Sources consulted",
+                value=", ".join(enrichment.sources) or "—",
+            )
+        )
+        blocks.append(
+            ReportBlock(
+                kind="facts",
+                heading="Multi-provider enrichment & confidence",
+                facts=conf_rows,
+            )
+        )
+
     ai = result.ai
     if ai:
         blocks.append(

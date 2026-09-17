@@ -11,7 +11,9 @@ from app.core.exceptions import NotFoundError
 from app.repositories.analysis_repository import AnalysisRepository
 from app.schemas.ai import AIAnalysis
 from app.schemas.analysis import AnalysisResult
+from app.schemas.graph import IOCGraph
 from app.services.ai_service import AIService
+from app.services.graph_service import build_ioc_graph
 from app.services.scoring import score_analysis
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
@@ -59,3 +61,26 @@ async def enrich_with_ai(
         result.ai = await ai_service.interpret(result)
         await repository.update_payload(result.analysis_id, result.model_dump(mode="json"))
     return result.ai
+
+
+@router.get(
+    "/{analysis_id}/graph",
+    response_model=IOCGraph,
+    summary="IOC relationship graph derived from enrichment evidence",
+)
+async def get_analysis_graph(
+    analysis_id: str,
+    repository: Annotated[AnalysisRepository, Depends(get_analysis_repository)],
+) -> IOCGraph:
+    row = await repository.get(analysis_id)
+    if row is None:
+        raise NotFoundError(
+            "The requested analysis was not found.",
+            code="analysis_not_found",
+        )
+    result = AnalysisResult(**row.payload)
+    return build_ioc_graph(
+        indicator=result.indicator,
+        indicator_type=result.indicator_type,
+        evidence=result.enrichment.evidence if result.enrichment else None,
+    )

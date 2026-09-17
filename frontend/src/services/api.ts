@@ -4,6 +4,7 @@ import type {
   HealthStatus,
   HistoryPage,
   HistoryParams,
+  IOCGraph,
   IndicatorType,
   ReportDocument,
 } from '../types'
@@ -114,6 +115,11 @@ export async function fetchHistory(
 /** Fetch the structured report document of a stored analysis. */
 export async function fetchReport(analysisId: string): Promise<ReportDocument> {
   return request<ReportDocument>(`/reports/${analysisId}`)
+}
+
+/** Fetch the IOC relationship graph of a stored analysis. */
+export async function fetchGraph(analysisId: string): Promise<IOCGraph> {
+  return request<IOCGraph>(`/analysis/${analysisId}/graph`)
 }
 
 /** Absolute URL of the downloadable PDF report (same-origin or API base). */

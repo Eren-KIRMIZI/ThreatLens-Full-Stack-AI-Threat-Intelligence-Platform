@@ -28,7 +28,12 @@ async def lifespan(application: FastAPI):
     application.state.database = database
     application.state.virustotal_service = VirusTotalService()
     yield
-    for attr in ("virustotal_service", "openrouter_service"):
+    names = (
+        "virustotal_service",
+        "openrouter_service",
+        "enrichment_service",
+    )
+    for attr in names:
         service = getattr(application.state, attr, None)
         if service is not None and hasattr(service, "aclose"):
             await service.aclose()

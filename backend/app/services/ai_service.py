@@ -26,8 +26,8 @@ def build_evidence(result: AnalysisResult) -> dict:
 
     Raw file content never enters this payload: only normalized metadata.
     """
-    data = result.model_dump(mode="json")
-    return {
+    data = result.model_dump(mode="json", exclude={"ai"})
+    bundle = {
         "indicator": data["indicator"],
         "indicator_type": data["indicator_type"],
         "source": data["source"],
@@ -36,6 +36,25 @@ def build_evidence(result: AnalysisResult) -> dict:
         "detections": data["detections"],
         "metadata": data["metadata"],
     }
+    enrichment = data.get("enrichment")
+    if enrichment:
+        bundle["enrichment"] = {
+            "confidence": enrichment.get("confidence", {}).get("overall"),
+            "sources": enrichment.get("sources", []),
+            "signals": (enrichment.get("confidence") or {}).get("reasons", []),
+            "extra_observations": [
+                {
+                    "provider": item["provider"],
+                    "type": item["evidence_type"],
+                    "title": item["title"],
+                    "value": item["value"],
+                    "verdict": item["verdict"],
+                }
+                for item in enrichment.get("evidence", [])
+                if item.get("provider") != "virustotal"
+            ][:40],
+        }
+    return bundle
 
 
 class AIService:

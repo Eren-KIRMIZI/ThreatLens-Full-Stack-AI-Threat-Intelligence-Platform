@@ -34,6 +34,15 @@ class Settings(BaseSettings):
     openrouter_api_key: str | None = None
     openrouter_model: str = "openrouter/auto"
 
+    # Optional enrichment providers
+    abuseipdb_api_key: str | None = None
+    otx_api_key: str | None = None
+    threatfox_api_key: str | None = None
+    malwarebazaar_api_key: str | None = None
+
+    # Enrichment
+    enrichment_timeout_seconds: float = 45.0
+
     # AI
     ai_assist_default: bool = False
 

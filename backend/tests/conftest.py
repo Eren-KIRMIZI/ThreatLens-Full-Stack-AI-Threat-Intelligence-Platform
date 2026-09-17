@@ -15,6 +15,7 @@ import os
 os.environ["VIRUSTOTAL_API_KEY"] = ""
 os.environ["OPENROUTER_API_KEY"] = ""
 os.environ["AI_ASSIST_DEFAULT"] = "false"
+os.environ["ENVIRONMENT"] = "test"
 
 import asyncio
 

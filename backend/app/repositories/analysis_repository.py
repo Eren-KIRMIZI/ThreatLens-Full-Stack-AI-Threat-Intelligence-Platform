@@ -81,6 +81,20 @@ class AnalysisRepository:
         row.payload = payload
         await self._session.commit()
 
+    async def count_for_indicator(
+        self, indicator: str, indicator_type: str
+    ) -> int:
+        """Total stored analyses for an indicator (rescan history length)."""
+        statement = (
+            select(func.count())
+            .select_from(Analysis)
+            .where(
+                Analysis.indicator == indicator,
+                Analysis.indicator_type == indicator_type,
+            )
+        )
+        return int((await self._session.execute(statement)).scalar_one())
+
     async def list_history(
         self,
         *,

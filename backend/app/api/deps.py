@@ -7,10 +7,12 @@ from typing import Annotated
 from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.database import get_db_session
 from app.repositories.analysis_repository import AnalysisRepository
 from app.services.ai_service import AIService
 from app.services.analysis_service import AnalysisService
+from app.services.enrichment_service import EnrichmentService
 from app.services.openrouter_service import OpenRouterService
 from app.services.virustotal_service import VirusTotalService
 
@@ -24,6 +26,21 @@ def get_virustotal_service(request: Request) -> VirusTotalService:
     if service is None:
         service = VirusTotalService()
         request.app.state.virustotal_service = service
+    return service
+
+
+def get_enrichment_service(request: Request) -> EnrichmentService | None:
+    """Return the app-scoped enrichment service (None in tests).
+
+    Enrichment fans out to live threat providers, so it is disabled whenever
+    the environment is ``test`` (the conftest forces this).
+    """
+    if get_settings().environment == "test":
+        return None
+    service = getattr(request.app.state, "enrichment_service", None)
+    if service is None:
+        service = EnrichmentService()
+        request.app.state.enrichment_service = service
     return service
 
 
@@ -54,4 +71,9 @@ async def get_analysis_service(
     repository: Annotated[AnalysisRepository, Depends(get_analysis_repository)],
     ai_service: Annotated[AIService, Depends(get_ai_service)],
 ) -> AnalysisService:
-    return AnalysisService(get_virustotal_service(request), repository, ai_service)
+    return AnalysisService(
+        get_virustotal_service(request),
+        repository,
+        ai_service,
+        enrichment=get_enrichment_service(request),
+    )

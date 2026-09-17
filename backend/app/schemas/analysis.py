@@ -8,10 +8,9 @@ from typing import Annotated, Literal, Union
 from pydantic import BaseModel, Field, field_validator
 
 from app.schemas.ai import AIAnalysis
+from app.schemas.common import IndicatorType, ThreatLevel
+from app.schemas.enrichment import Enrichment
 from app.utils import validators
-
-IndicatorType = Literal["FILE", "HASH", "URL", "DOMAIN", "IP"]
-ThreatLevel = Literal["clean", "suspicious", "malicious", "critical"]
 
 
 class AIRequestMixin(BaseModel):
@@ -149,3 +148,7 @@ class AnalysisResult(BaseModel):
     )
     threat_level: ThreatLevel | None = None
     ai: AIAnalysis | None = None
+    enrichment: Enrichment | None = Field(
+        default=None,
+        description="Multi-provider evidence and explainable confidence",
+    )

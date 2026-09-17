@@ -2,6 +2,7 @@
 
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.main import app
 
 client = TestClient(app)
@@ -14,7 +15,7 @@ def test_health_returns_ok() -> None:
     assert payload["status"] == "ok"
     assert payload["service"] == "threatlens-api"
     assert payload["version"]
-    assert payload["environment"] == "development"
+    assert payload["environment"] == get_settings().environment
     assert payload["checks"] == {"core": "ok"}
 
 

@@ -126,6 +126,7 @@ export interface AnalysisResult {
   threat_score: number | null
   threat_level: ThreatLevel | null
   ai: AIAnalysis | null
+  enrichment: Enrichment | null
 }
 
 export interface HistoryItem {
@@ -183,4 +184,76 @@ export interface ReportDocument {
   threat_score: number | null
   threat_level: ThreatLevel | null
   blocks: ReportBlock[]
+}
+
+export type GraphNodeKind = 'root' | 'source' | 'evidence' | 'indicator'
+
+export interface GraphNode {
+  id: string
+  kind: GraphNodeKind
+  label: string
+  indicator_type: IndicatorType | null
+  subtitle: string | null
+  verdict: string | null
+  score: number | null
+  url: string | null
+  meta: Record<string, unknown>
+}
+
+export interface GraphEdge {
+  source: string
+  target: string
+  relation: string
+}
+
+export interface IOCGraph {
+  root: string
+  nodes: GraphNode[]
+  edges: GraphEdge[]
+  generated_at: string
+}
+
+export interface EnrichmentSourceConfidence {
+  source: string
+  score: number
+  verdict: string
+  signals: string[]
+}
+
+export interface EnrichmentConfidence {
+  overall: number
+  verdict: string
+  sources: EnrichmentSourceConfidence[]
+  reasons: string[]
+}
+
+export interface EnrichmentEvidence {
+  id: string
+  provider: string
+  evidence_type: string
+  title: string
+  value: string
+  confidence: number
+  verdict: string | null
+  first_seen: string | null
+  last_seen: string | null
+  source_ref: string | null
+}
+
+export interface ProviderStatus {
+  provider: string
+  ok: boolean
+  latency_ms: number | null
+  supported: boolean
+  configured: boolean
+  error: string | null
+}
+
+export interface Enrichment {
+  version: string
+  sources: string[]
+  generated_at: string
+  evidence: EnrichmentEvidence[]
+  confidence: EnrichmentConfidence | null
+  provider_status: ProviderStatus[]
 }
