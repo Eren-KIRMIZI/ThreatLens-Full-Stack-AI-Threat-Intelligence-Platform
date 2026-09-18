@@ -1,16 +1,25 @@
+<div align="center">
+
 # ThreatLens — Full-Stack AI Threat Intelligence Platform
 
-Evidence-first threat intelligence analysis with a deterministic scoring
-engine, an LLM interpreter that only reasons from real virus-total evidence,
-and one-click PDF reports.
+**🌐 English · [Türkçe](README.tr.md)**
 
-- **Backend** — FastAPI (Python 3.11) · SQLAlchemy(async) + SQLite/Alembic · VirusTotal
-  v3 REST client with normalized evidence · OpenRouter LLM (free-tier friendly)
-  · reportlab PDF rendering
-- **Frontend** — React 19 + TypeScript · Vite 8 · Tailwind CSS v4 · TanStack Query ·
-  React Hook Form + Zod · Recharts · oxlint
+_Evidence-first threat intelligence analysis with a deterministic scoring
+engine, an LLM interpreter that only reasons from real VirusTotal evidence,
+and one-click PDF reports._
 
-> [Backend README](backend/README.md) · [Frontend README](frontend/README.md) · Interactive API docs at `http://127.0.0.1:8000/docs`
+</div>
+
+## Stack
+
+- **Backend** — FastAPI (Python 3.11) · SQLAlchemy (async) + SQLite/Alembic ·
+  VirusTotal v3 REST client with normalized evidence · parallel enrichment
+  (AbuseIPDB, URLhaus, MalwareBazaar, ThreatFox, OTX, RDAP, GeoIP, DNS) ·
+  OpenRouter LLM (free-tier friendly) · reportlab PDF rendering
+- **Frontend** — React 19 + TypeScript · Vite 8 · Tailwind CSS v4 · TanStack
+  Query · React Hook Form + Zod · Recharts · oxlint
+
+Interactive API docs: `http://127.0.0.1:8000/docs`
 
 ---
 
@@ -94,6 +103,30 @@ frontend/
   src/hooks/, src/utils/
 ```
 
+### Frontend routes
+
+| Route | Page |
+| --- | --- |
+| `/` | Dashboard — verdict distribution `critical/malicious/suspicious/clean`, quick analyze |
+| `/analyze` | Analyze — hash / URL / domain / IP / file upload, AI toggle |
+| `/analysis/:analysisId` | Analysis detail — detections table, metadata, AI interpretation, PDF download |
+| `/history` | History — filter by verdict, search, pagination |
+| `/iocs` | IOC Inventory — deduplicated registry with per-indicator timelines |
+| `/investigations` | Investigations — cases, notes, tags, pinning |
+| `/watchlist` | Watchlist — monitored indicators, alert rules, alert inbox |
+| `/reports` | Reports — saved analyses with JSON preview + PDF download |
+| `/graph` (nested) | IOC relationship graph |
+| `/settings` | Settings — runtime configuration status (keys live server-side) |
+
+### Frontend scripts
+
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Vite dev server with HMR + API proxy (`/api/*` → `:8000`) |
+| `npm run build` | `tsc -b` then `vite build` (output in `dist/`) |
+| `npm run lint` | oxlint over `src/` |
+| `npm run preview` | serve the production build locally |
+
 ## Quickstart
 
 ### 0) Prerequisites
@@ -111,6 +144,15 @@ python -m venv .venv
 .\.venv\Scripts\pip install -r requirements.txt      # Windows
 cp .env.example .env                                  # fill in API keys
 .\.venv\Scripts\python -m uvicorn app.main:app --reload
+```
+
+Development uses SQLite (`sqlite+aiosqlite`) with the schema auto-created on
+startup. For production (e.g. Supabase/PostgreSQL), set `DATABASE_URL` in `.env`
+and manage the schema with Alembic instead:
+
+```bash
+.\.venv\Scripts\python -m alembic upgrade head                                  # apply migrations
+.\.venv\Scripts\python -m alembic revision --autogenerate -m "change"          # new migration
 ```
 
 ### 2) Frontend
@@ -191,6 +233,23 @@ npm run build                                        # tsc -b && vite build
 | `GET /export/analyses/{id}.json` | raw analysis JSON |
 | `GET /export/analyses/{id}/stix.json` | STIX 2.1 bundle |
 | `GET /export/analyses/{id}/yara` · `/sigma` | generated YARA / Sigma rule |
+
+### Reports & PDF export (backend detail)
+
+`app/services/report_service.py` compiles a deterministic report from any
+stored analysis:
+
+- **One model, two outputs** — `build_report` produces a structured
+  `ReportDocument` (executive summary + evidence tables + optional AI section);
+  `render_pdf` renders that same model with reportlab, so the JSON preview and
+  the PDF never drift apart.
+- **Rendered server-side** — `GET /reports/{id}/pdf` streams `application/pdf`
+  with a proper `Content-Disposition`. A Unicode font (Segoe UI, then Arial) is
+  embedded when available; otherwise Helvetica is used so PDF generation always
+  succeeds.
+- **AI integration** — when the analysis carries an `ai` interpretation,
+  tactics, capabilities, recommendations, correlations and the threat actor
+  profile are included in the report.
 
 ## CI/CD
 
