@@ -22,13 +22,15 @@ export function StatCard({
       <p className="eyebrow">{label}</p>
       <p
         className={cn(
-          'mt-2 text-2xl font-semibold tracking-tight text-ink tabular-nums',
+          'mt-2.5 text-[28px] leading-none font-semibold tracking-tight text-ink tabular-nums',
           valueClass,
         )}
       >
         {value}
       </p>
-      {hint && <p className="mt-1 text-[12px] text-ink-3">{hint}</p>}
+      {hint && (
+        <p className="mt-2 text-[12px] leading-relaxed text-ink-3">{hint}</p>
+      )}
     </div>
   )
 }

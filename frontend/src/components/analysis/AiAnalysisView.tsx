@@ -12,8 +12,9 @@ import {
 } from 'lucide-react'
 
 import type { AIAnalysis } from '../../types'
-import { formatDate, levelLabel, LEVEL_STYLE } from './level'
+import { formatDate, LEVEL_STYLE } from './level'
 import { LevelBadge } from './LevelBadge'
+import { useI18n } from '../../i18n'
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
@@ -30,7 +31,10 @@ function Section({ icon, title, children }: { icon: React.ReactNode; title: stri
 }
 
 function EmptyText() {
-  return <p className="text-[12.5px] text-ink-3">Not assessed from the evidence.</p>
+  const { t } = useI18n()
+  return (
+    <p className="text-[12.5px] text-ink-3">{t('Not assessed from the evidence.')}</p>
+  )
 }
 
 interface AiAnalysisViewProps {
@@ -38,7 +42,10 @@ interface AiAnalysisViewProps {
 }
 
 export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
-  const levelStyle = ai.threat_level_assessment ? LEVEL_STYLE[ai.threat_level_assessment] : null
+  const { t } = useI18n()
+  const levelStyle = ai.threat_level_assessment
+    ? LEVEL_STYLE[ai.threat_level_assessment]
+    : null
 
   return (
     <div className="space-y-4">
@@ -46,7 +53,8 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-accent" />
           <span className="text-[13px] text-ink-2">
-            Model: <span className="font-mono text-ink">{ai.model ?? '—'}</span>
+            {t('Model:')}{' '}
+            <span className="font-mono text-ink">{ai.model ?? '—'}</span>
           </span>
         </div>
         <div className="flex items-center gap-3 text-[12px] text-ink-3">
@@ -57,11 +65,11 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         </div>
       </div>
 
-      <Section icon={<Radar className="h-3.5 w-3.5" />} title="Summary">
+      <Section icon={<Radar className="h-3.5 w-3.5" />} title={t('Summary')}>
         <p className="text-[13.5px] leading-relaxed text-ink">{ai.summary}</p>
       </Section>
 
-      <Section icon={<Compass className="h-3.5 w-3.5" />} title="Tactics">
+      <Section icon={<Compass className="h-3.5 w-3.5" />} title={t('Tactics')}>
         {ai.tactics.length === 0 ? (
           <EmptyText />
         ) : (
@@ -97,7 +105,7 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
 
       <Section
         icon={<UserX className="h-3.5 w-3.5" />}
-        title="Threat actor profile"
+        title={t('Threat actor profile')}
       >
         {!ai.threat_actor_profile ? (
           <EmptyText />
@@ -105,17 +113,17 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
           <div className="rounded-lg border border-border bg-surface px-3 py-2.5">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[13px] font-semibold text-ink">
-                {ai.threat_actor_profile.name ?? 'Unknown / unprofiled'}
+                {ai.threat_actor_profile.name ?? t('Unknown / unprofiled')}
               </span>
               {ai.threat_actor_profile.confidence && (
                 <span className="rounded border border-border-strong bg-surface-3 px-1.5 py-0.5 text-[11px] text-ink-2">
-                  confidence: {ai.threat_actor_profile.confidence}
+                  {t('confidence:')} {ai.threat_actor_profile.confidence}
                 </span>
               )}
             </div>
             {ai.threat_actor_profile.campaign && (
               <p className="mt-1 text-[12.5px] text-ink-2">
-                Campaign: {ai.threat_actor_profile.campaign}
+                {t('Campaign:')} {ai.threat_actor_profile.campaign}
               </p>
             )}
             {ai.threat_actor_profile.description && (
@@ -127,7 +135,7 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         )}
       </Section>
 
-      <Section icon={<ShieldAlert className="h-3.5 w-3.5" />} title="Capabilities & impact">
+      <Section icon={<ShieldAlert className="h-3.5 w-3.5" />} title={t('Capabilities & impact')}>
         {ai.capabilities.length === 0 ? (
           <EmptyText />
         ) : (
@@ -152,7 +160,7 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         )}
       </Section>
 
-      <Section icon={<ListChecks className="h-3.5 w-3.5" />} title="Recommendations">
+      <Section icon={<ListChecks className="h-3.5 w-3.5" />} title={t('Recommendations')}>
         {ai.recommendations.length === 0 ? (
           <EmptyText />
         ) : (
@@ -167,19 +175,19 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         )}
       </Section>
 
-      <Section icon={<Repeat className="h-3.5 w-3.5" />} title="Intelligence lifecycle">
+      <Section icon={<Repeat className="h-3.5 w-3.5" />} title={t('Intelligence lifecycle')}>
         {ai.lifecycle_stage ? (
           <p className="text-[12.5px] text-ink-2">
-            Currently assessed at the{' '}
+            {t('Currently assessed at the')}{' '}
             <span className="font-medium text-ink">{ai.lifecycle_stage}</span>{' '}
-            stage of the threat intelligence lifecycle.
+            {t('stage of the threat intelligence lifecycle.')}
           </p>
         ) : (
           <EmptyText />
         )}
       </Section>
 
-      <Section icon={<Braces className="h-3.5 w-3.5" />} title="Correlations">
+      <Section icon={<Braces className="h-3.5 w-3.5" />} title={t('Correlations')}>
         {ai.correlations.length === 0 ? (
           <EmptyText />
         ) : (
@@ -196,7 +204,7 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
 
       <Section
         icon={<AlertTriangle className="h-3.5 w-3.5" />}
-        title="Evidence cited"
+        title={t('Evidence cited')}
       >
         {ai.evidence_refs.length === 0 ? (
           <EmptyText />
@@ -214,8 +222,9 @@ export function AiAnalysisView({ ai }: AiAnalysisViewProps) {
         )}
         {levelStyle && (
           <p className="mt-3 text-[12px] text-ink-3">
-            AI assessment: {levelLabel(ai.threat_level_assessment)} — reported
-            separately from the deterministic score.
+            {t('AI assessment:')}{' '}
+            <span className={levelStyle.text}>{t(ai.threat_level_assessment ?? '')}</span>{' '}
+            {t('reported separately from the deterministic score.')}
           </p>
         )}
       </Section>

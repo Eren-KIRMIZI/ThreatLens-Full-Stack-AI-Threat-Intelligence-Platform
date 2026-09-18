@@ -4,21 +4,23 @@ import { KeyRound, ServerCrash, ShieldCheck } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Panel } from '../components/ui/Panel'
 import { useHealth } from '../hooks/useHealth'
+import { useI18n } from '../i18n'
 
 export function Settings() {
   const { data: health, isError, isPending } = useHealth()
+  const { t } = useI18n()
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Settings"
-        description="Service configuration and platform information."
+        title={t('Settings')}
+        description={t('Service configuration and platform information.')}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Panel eyebrow="Service" title="Backend status">
+        <Panel eyebrow={t('Service')} title={t('Backend status')}>
           <dl className="space-y-3">
-            <Row label="Status" mono>
+            <Row label={t('Status')} mono>
               <span className="flex items-center gap-2">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
@@ -26,46 +28,49 @@ export function Settings() {
                   }`}
                 />
                 {isError
-                  ? 'Unreachable'
+                  ? t('Unreachable')
                   : isPending
-                    ? 'Checking…'
-                    : 'Operational'}
+                    ? t('Checking…')
+                    : t('Operational')}
               </span>
             </Row>
-            <Row label="Version" mono>
+            <Row label={t('Version')} mono>
               {health?.version ?? '—'}
             </Row>
-            <Row label="Environment" mono>
+            <Row label={t('Environment')} mono>
               {health?.environment ?? '—'}
             </Row>
-            <Row label="Service" mono>
+            <Row label={t('Service')} mono>
               {health?.service ?? '—'}
             </Row>
           </dl>
         </Panel>
 
-        <Panel eyebrow="Security" title="API keys">
+        <Panel eyebrow={t('Security')} title={t('API keys')}>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-3 px-3.5 py-3">
               <KeyRound className="h-4 w-4 shrink-0 text-ink-3" />
               <p className="text-[13px] leading-relaxed text-ink-2">
-                VirusTotal and OpenRouter keys are stored in the backend{' '}
-                <code className="mono text-[12px] text-ink">.env</code> file and
-                are never exposed to the browser.
+                {t(
+                  'VirusTotal and OpenRouter keys are stored in the backend {file} file and are never exposed to the browser.',
+                  { file: '.env' },
+                )}
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-3 px-3.5 py-3">
               <ServerCrash className="h-4 w-4 shrink-0 text-ink-3" />
               <p className="text-[13px] leading-relaxed text-ink-2">
-                Rate limits are enforced server-side; upstream provider errors
-                are surfaced as clean, user-friendly messages.
+                {t(
+                  'Rate limits are enforced server-side; upstream provider errors are surfaced as clean, user-friendly messages.',
+                )}
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-lg border border-border bg-surface-3 px-3.5 py-3">
               <ShieldCheck className="h-4 w-4 shrink-0 text-ink-3" />
               <p className="text-[13px] leading-relaxed text-ink-2">
-                All uploaded samples are hashed and sent as metadata only. Raw
-                binaries are not forwarded to the AI layer.
+                {t(
+                  'All uploaded samples are hashed and sent as metadata only. Raw binaries are not forwarded to the AI layer.',
+                )}
               </p>
             </div>
           </div>

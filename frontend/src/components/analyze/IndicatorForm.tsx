@@ -8,32 +8,37 @@ import { Button } from '../ui/Button'
 import { Spinner } from '../ui/Spinner'
 import { cn } from '../../utils/cn'
 import { isDomain, isHash, isIp, isUrl } from '../../utils/validate'
+import { useI18n } from '../../i18n'
+import type { I18nContextValue } from '../../i18n'
 import type { IndicatorType } from '../../types'
 
 export type AnalyzeMode = Exclude<IndicatorType, 'FILE'> | 'FILE'
 
-const textSchema = (mode: Exclude<AnalyzeMode, 'FILE'>) =>
+const textSchema = (
+  mode: Exclude<AnalyzeMode, 'FILE'>,
+  t: I18nContextValue['t'],
+) =>
   z.object({
     value: z
       .string()
       .trim()
-      .min(1, 'Enter an indicator to analyze')
+      .min(1, t('Enter an indicator to analyze'))
       .refine((v) => {
         if (mode === 'HASH') return isHash(v)
         if (mode === 'URL') return isUrl(v)
         if (mode === 'DOMAIN') return isDomain(v)
         return isIp(v)
-      }, `That does not look like a valid ${mode.toLowerCase()} indicator.`),
+      }, t('That does not look like a valid {mode} indicator.', { mode: mode.toLowerCase() })),
   })
 
-const schema = (mode: AnalyzeMode) =>
+const schema = (mode: AnalyzeMode, t: I18nContextValue['t']) =>
   z.object({
-    value: mode === 'FILE' ? z.string() : textSchema(mode).shape.value,
+    value: mode === 'FILE' ? z.string() : textSchema(mode, t).shape.value,
     file:
       mode === 'FILE'
         ? z
             .instanceof(File)
-            .refine((f) => f.size > 0, 'The selected file is empty.')
+            .refine((f) => f.size > 0, t('The selected file is empty.'))
         : z.instanceof(File).optional(),
   })
 
@@ -66,6 +71,7 @@ export function IndicatorForm({
   onSubmit,
 }: IndicatorFormProps) {
   const id = useId()
+  const { t } = useI18n()
   const [ai, setAi] = useState(false)
   const isFile = mode === 'FILE'
 
@@ -75,7 +81,7 @@ export function IndicatorForm({
     setValue,
     formState: { errors },
   } = useForm<{ value: string; file?: File }>({
-    resolver: zodResolver(schema(mode)),
+    resolver: zodResolver(schema(mode, t)),
     defaultValues: { value: defaultInput ?? '' },
   })
 
@@ -126,10 +132,10 @@ export function IndicatorForm({
         <Button type="submit" disabled={submitting}>
           {submitting ? (
             <>
-              <Spinner /> Analyzing…
+              <Spinner /> {t('Analyzing…')}
             </>
           ) : (
-            'Analyze'
+            t('Analyze')
           )}
         </Button>
         {errors.file && (
@@ -147,6 +153,7 @@ interface FilePickerProps {
 }
 
 function FilePicker({ id, invalid, onChange }: FilePickerProps) {
+  const { t } = useI18n()
   const [name, setName] = useState<string | null>(null)
 
   return (
@@ -163,13 +170,13 @@ function FilePicker({ id, invalid, onChange }: FilePickerProps) {
         <UploadCloud className="h-6 w-6 text-ink-3" />
       )}
       <span className="text-[13px] font-medium text-ink">
-        {name ?? 'Choose a file to analyze'}
+        {name ?? t('Choose a file to analyze')}
       </span>
       <span className="text-[12px] text-ink-3">
-        Hashes are computed and submitted server-side. Max 32 MB.
+        {t('Hashes are computed and submitted server-side. Max 32 MB.')}
       </span>
       <span className="mt-1 font-mono text-[11.5px] text-accent-strong">
-        {name ?? 'or drop it here'}
+        {name ?? t('or drop it here')}
       </span>
       <input
         id={id}
@@ -194,6 +201,7 @@ function AiToggle({
   checked: boolean
   onChange: (value: boolean) => void
 }) {
+  const { t } = useI18n()
   return (
     <label className="flex w-fit cursor-pointer items-center gap-2.5 select-none">
       <button
@@ -213,8 +221,8 @@ function AiToggle({
           )}
         />
       </button>
-      <span className="text-[13px] text-ink-2">
-        Include <span className="font-medium text-ink">AI interpretation</span>
+      <span className="text-[13px] font-medium text-ink">
+        {t('Include AI interpretation')}
       </span>
     </label>
   )

@@ -3,25 +3,26 @@
 @import '@fontsource-variable/jetbrains-mono';
 
 @theme {
-  /* Surfaces — near-black / charcoal scale */
-  --color-bg: #0a0c10;
-  --color-surface: #0f1217;
-  --color-surface-2: #141821;
-  --color-surface-3: #1a1f2a;
-  --color-surface-4: #212734;
+  /* Surfaces — deep graphite scale (cool, neutral, calm) */
+  --color-bg: #0b0e10;
+  --color-surface: #101418;
+  --color-surface-2: #161b20;
+  --color-surface-3: #1c2329;
+  --color-surface-4: #242d35;
 
   /* Hairlines */
-  --color-border: #1e2430;
-  --color-border-strong: #2a3140;
+  --color-border: #1e252d;
+  --color-border-strong: #2b343e;
 
   /* Ink */
-  --color-ink: #e6eaf0;
-  --color-ink-2: #9aa5b5;
-  --color-ink-3: #5c6675;
+  --color-ink: #e9edf0;
+  --color-ink-2: #99a5ad;
+  --color-ink-3: #5e6b75;
 
-  /* Brand accent — single signal color */
-  --color-accent: #38bdf8;
-  --color-accent-strong: #7dd3fc;
+  /* Brand accent — emerald signal, drawn from the severity ladder */
+  --color-accent: #10b981;
+  --color-accent-strong: #34d399;
+  --color-accent-dim: #0b9e72;
 
   /* Severity */
   --color-low: #34d399;
@@ -31,6 +32,8 @@
   --color-critical: #fb7185;
   --color-clean: #34d399;
   --color-suspicious: #fbbf24;
+  --color-ok: #34d399;
+  --color-warn: #fbbf24;
 
   --font-sans:
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
@@ -47,21 +50,27 @@
 
   body {
     @apply bg-bg font-sans text-ink antialiased;
-    background-image: radial-gradient(
-        1200px 480px at 85% -10%,
-        color-mix(in srgb, var(--color-accent) 5%, transparent),
-        transparent 60%
+    background-image:
+      radial-gradient(
+        1100px 520px at 82% -12%,
+        color-mix(in srgb, var(--color-accent-dim) 6%, transparent),
+        transparent 62%
       ),
       radial-gradient(
-        900px 420px at -10% 110%,
-        color-mix(in srgb, var(--color-accent-dim, #0ea5e9) 4%, transparent),
-        transparent 55%
+        900px 460px at -8% 112%,
+        color-mix(in srgb, var(--color-accent-dim) 4%, transparent),
+        transparent 58%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--color-bg) 92%, white) 0%,
+        var(--color-bg) 34%
       );
     background-attachment: fixed;
   }
 
   ::selection {
-    background: color-mix(in srgb, var(--color-accent) 28%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 26%, transparent);
   }
 
   ::-webkit-scrollbar {
@@ -82,26 +91,33 @@
 }
 
 @layer components {
-  /* Card surface */
+  /* Card surface — layered depth instead of flat fills */
   .panel {
-    @apply rounded-xl border border-border bg-surface-2;
-    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    @apply rounded-xl border border-border bg-surface;
+    box-shadow:
+      0 1px 2px rgb(0 0 0 / 0.4),
+      inset 0 1px 0 rgb(255 255 255 / 0.035);
   }
 
   /* Subtle glass surface for sticky chrome */
   .glass {
-    background: color-mix(in srgb, var(--color-surface) 82%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    background: color-mix(in srgb, var(--color-surface) 84%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
   }
 
   /* Eyebrow / section label */
   .eyebrow {
-    @apply font-mono text-[11px] font-medium tracking-[0.14em] text-ink-3 uppercase;
+    @apply font-mono text-[10.5px] font-medium tracking-[0.16em] text-ink-3 uppercase;
   }
 
   /* Hash / indicator primitives */
   .mono {
     @apply font-mono;
+  }
+
+  /* Interaction focus ring — consistent across inputs, links and buttons */
+  .focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-1 focus-visible:ring-offset-bg focus-visible:outline-none;
   }
 }

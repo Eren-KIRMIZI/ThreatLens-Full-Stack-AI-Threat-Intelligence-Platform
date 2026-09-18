@@ -16,6 +16,7 @@ import {
 } from '../components/analyze/IndicatorForm'
 import { AnalysisResultView } from '../components/analysis/AnalysisResultView'
 import { ApiRequestError, analyzeFile, analyzeIndicator } from '../services/api'
+import { useI18n } from '../i18n'
 
 const MODES: { value: AnalyzeMode; label: string }[] = [
   { value: 'FILE', label: 'File' },
@@ -36,6 +37,7 @@ const MODE_HINTS: Record<AnalyzeMode, string> = {
 export function Analyze() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useI18n()
   const [searchParams] = useSearchParams()
 
   const initialType = searchParams.get('type') as AnalyzeMode | null
@@ -70,13 +72,15 @@ export function Analyze() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Analyze an Indicator"
-        description="Submit a file, hash, URL, domain or IP address for threat analysis."
+        title={t('Analyze an Indicator')}
+        description={t(
+          'Submit a file, hash, URL, domain or IP address for threat analysis.',
+        )}
       />
 
-      <Panel eyebrow="Input type" title="Select indicator type">
+      <Panel eyebrow={t('Input type')} title={t('Select indicator type')}>
         <SegmentedControl
-          options={MODES}
+          options={MODES.map((mode) => ({ ...mode, label: t(mode.label) }))}
           value={mode}
           onChange={(next) => {
             setMode(next)
@@ -85,7 +89,7 @@ export function Analyze() {
           }}
           className="w-full sm:w-auto"
         />
-        <p className="mt-3 text-[13px] text-ink-2">{MODE_HINTS[mode]}</p>
+        <p className="mt-3 text-[13px] text-ink-2">{t(MODE_HINTS[mode])}</p>
 
         <div className="mt-4 max-w-xl">
           <IndicatorForm
@@ -104,12 +108,12 @@ export function Analyze() {
             <TriangleAlert className="mt-0.5 h-5 w-5 shrink-0 text-critical" />
             <div className="min-w-0">
               <p className="text-[14px] font-semibold text-ink">
-                Analysis failed
+                {t('Analysis failed')}
               </p>
               <p className="mt-0.5 text-[13px] text-ink-2">
                 {error instanceof ApiRequestError
                   ? error.message
-                  : 'An unexpected error occurred.'}
+                  : t('An unexpected error occurred.')}
               </p>
               {error instanceof ApiRequestError && error.code && (
                 <p className="mt-1 font-mono text-[11.5px] text-ink-3">
@@ -128,7 +132,7 @@ export function Analyze() {
               variant="secondary"
               onClick={() => navigate(`/analysis/${result.analysis_id}`)}
             >
-              Open full analysis page
+              {t('Open full analysis page')}
               <ArrowUpRight className="h-4 w-4" />
             </Button>
           </div>
@@ -136,9 +140,9 @@ export function Analyze() {
         </>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
-          <Panel eyebrow="Coverage">
+          <Panel eyebrow={t('Coverage')}>
             <h3 className="mb-4 text-[14px] font-semibold text-ink">
-              What ThreatLens analyzes
+              {t('What ThreatLens analyzes')}
             </h3>
             <ul className="space-y-3">
               {[
@@ -167,10 +171,10 @@ export function Analyze() {
                   <Radio className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
                   <div>
                     <p className="text-[13.5px] font-medium text-ink">
-                      {item.label}
+                      {t(item.label)}
                     </p>
                     <p className="text-[12.5px] leading-relaxed text-ink-2">
-                      {item.text}
+                      {t(item.text)}
                     </p>
                   </div>
                 </li>
@@ -178,11 +182,13 @@ export function Analyze() {
             </ul>
           </Panel>
 
-          <Panel eyebrow="Status" title="Ready">
+          <Panel eyebrow={t('Status')} title={t('Ready')}>
             <EmptyState
               icon={<Radio className="h-5 w-5" />}
-              title="Analysis engine standby"
-              description="Results render here as soon as the backend responds. Enable AI interpretation to include an evidence-based narrative."
+              title={t('Analysis engine standby')}
+              description={t(
+                'Results render here as soon as the backend responds. Enable AI interpretation to include an evidence-based narrative.',
+              )}
               className="py-10"
             />
           </Panel>

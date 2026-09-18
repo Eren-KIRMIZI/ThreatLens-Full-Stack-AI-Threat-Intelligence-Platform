@@ -12,18 +12,11 @@ import { formatDate, shortId } from '../components/analysis/level'
 import { ReportPreview } from '../components/reports/ReportPreview'
 import { fetchReport, reportPdfUrl } from '../services/api'
 import { useHistoryPage } from '../hooks/useAnalyses'
-import type { IndicatorType } from '../types'
+import { useI18n } from '../i18n'
 import { cn } from '../utils/cn'
 
-const TYPE_LABEL: Record<IndicatorType, string> = {
-  FILE: 'File',
-  HASH: 'Hash',
-  URL: 'URL',
-  DOMAIN: 'Domain',
-  IP: 'IP',
-}
-
 export function Reports() {
+  const { t } = useI18n()
   const history = useHistoryPage({ filter: 'all', limit: 20 })
   const items = history.data?.items ?? []
 
@@ -44,26 +37,30 @@ export function Reports() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Security Reports"
-        description="Export professional, evidence-based PDF reports for any stored analysis."
+        title={t('Security Reports')}
+        description={t(
+          'Export professional, evidence-based PDF reports for any stored analysis.',
+        )}
       />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel
-          eyebrow="Report library"
-          title="Available analyses"
+          eyebrow={t('Report library')}
+          title={t('Available analyses')}
           action={<FileText className="h-4 w-4 text-ink-3" aria-hidden />}
         >
           {history.isLoading ? (
             <div className="flex items-center justify-center gap-3 py-12 text-ink-2">
               <Spinner />
-              Loading…
+              {t('Loading…')}
             </div>
           ) : items.length === 0 ? (
             <EmptyState
               icon={<ShieldOff className="h-5 w-5" />}
-              title="Nothing to report yet"
-              description="Run an analysis first; every stored investigation can be exported as a PDF."
+              title={t('Nothing to report yet')}
+              description={t(
+                'Run an analysis first; every stored investigation can be exported as a PDF.',
+              )}
               className="py-10"
             />
           ) : (
@@ -79,12 +76,12 @@ export function Reports() {
                         'w-full rounded-lg border px-3 py-2.5 text-left transition-colors',
                         active
                           ? 'border-accent/50 bg-accent/10'
-                          : 'border-transparent hover:bg-surface',
+                          : 'border-transparent hover:bg-surface-2',
                       )}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <span className="rounded border border-border-strong bg-surface-3 px-1.5 py-0.5 text-[10px] font-semibold text-ink-2 uppercase">
-                          {TYPE_LABEL[item.indicator_type]}
+                          {t(`type.${item.indicator_type}`)}
                         </span>
                         <LevelBadge level={item.threat_level} />
                       </div>
@@ -108,24 +105,24 @@ export function Reports() {
             <Panel>
               <div className="flex items-center justify-center gap-3 py-16 text-ink-2">
                 <Spinner className="h-5 w-5" />
-                Compiling report…
+                {t('Compiling report…')}
               </div>
             </Panel>
           ) : report.isError ? (
             <Panel>
               <EmptyState
-                title="Report could not be generated"
+                title={t('Report could not be generated')}
                 description={
                   report.error instanceof Error
                     ? report.error.message
-                    : 'Unknown error.'
+                    : t('Unknown error.')
                 }
               />
             </Panel>
           ) : report.data ? (
             <>
               <Panel
-                eyebrow="Preview"
+                eyebrow={t('Preview')}
                 title={`${report.data.title}`}
                 action={
                   <Button
@@ -134,7 +131,7 @@ export function Reports() {
                     disabled={!effectiveId}
                   >
                     <Download className="h-4 w-4" />
-                    Download PDF
+                    {t('Download PDF')}
                   </Button>
                 }
                 className="mb-0"
@@ -145,8 +142,10 @@ export function Reports() {
           ) : (
             <Panel>
               <EmptyState
-                title="Select an analysis"
-                description="Pick an investigation from the library to preview and export its report."
+                title={t('Select an analysis')}
+                description={t(
+                  'Pick an investigation from the library to preview and export its report.',
+                )}
               />
             </Panel>
           )}

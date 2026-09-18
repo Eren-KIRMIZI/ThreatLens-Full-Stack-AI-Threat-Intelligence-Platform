@@ -10,6 +10,7 @@ import { SegmentedControl } from '../components/ui/SegmentedControl'
 import { LevelBadge } from '../components/analysis/LevelBadge'
 import { formatDate, shortId } from '../components/analysis/level'
 import { useIOC, useIOCs } from '../hooks/useIntel'
+import { useI18n } from '../i18n'
 import type { ThreatLevel } from '../types'
 
 const TYPE_OPTIONS = [
@@ -23,6 +24,7 @@ const TYPE_OPTIONS = [
 const PAGE_SIZE = 25
 
 export function IOCsPage() {
+  const { t } = useI18n()
   const [type, setType] = useState('all')
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(0)
@@ -40,20 +42,25 @@ export function IOCsPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="IOC Inventory"
-        description="Deduplicated indicators ThreatLens has observed, with observation counts and snapshot history."
+<PageHeader
+        title={t('IOC Inventory')}
+        description={t(
+          'Deduplicated indicators ThreatLens has observed, with observation counts and snapshot history.',
+        )}
       />
 
       <div className="grid gap-4 lg:grid-cols-5">
         <Panel
-          eyebrow="Registry"
-          title="Distinct indicators"
+          eyebrow={t('Registry')}
+          title={t('Distinct indicators')}
           className="lg:col-span-3"
         >
           <div className="mb-4 grid gap-3 lg:grid-cols-[auto_1fr]">
             <SegmentedControl
-              options={TYPE_OPTIONS}
+              options={TYPE_OPTIONS.map((option) => ({
+                ...option,
+                label: t(option.label),
+              }))}
               value={type}
               onChange={(value) => {
                 setType(value)
@@ -69,17 +76,17 @@ export function IOCsPage() {
                   setSearch(event.target.value)
                   setPage(0)
                 }}
-                placeholder="Search indicatorsâ€¦"
+                placeholder={t('Search indicators…')}
                 spellCheck={false}
-                className="h-10 w-full rounded-lg border border-border bg-surface-3 pr-3 pl-9 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-3 focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+                className="focus-ring h-10 w-full rounded-lg border border-border bg-surface-3 pr-3 pl-9 font-mono text-[13px] text-ink placeholder:font-sans placeholder:text-ink-3 focus:border-accent/50"
               />
             </div>
           </div>
 
           {iocs.isLoading ? (
             <div className="flex items-center justify-center gap-3 py-16 text-ink-2">
-              <Spinner className="h-5 w-5" />
-              Loading registryâ€¦
+<Spinner className="h-5 w-5" />
+              {t('Loading registry…')}
             </div>
           ) : data && data.items.length > 0 ? (
             <>
@@ -87,11 +94,11 @@ export function IOCsPage() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-border bg-surface">
-                      <th className="eyebrow px-3 py-2.5 font-normal">Indicator</th>
-                      <th className="eyebrow px-3 py-2.5 font-normal">Type</th>
-                      <th className="eyebrow px-3 py-2.5 font-normal">Verdict</th>
-                      <th className="eyebrow px-3 py-2.5 font-normal">Score</th>
-                      <th className="eyebrow px-3 py-2.5 font-normal">Seen</th>
+<th className="eyebrow px-3 py-2.5 font-normal">{t('Indicator')}</th>
+                      <th className="eyebrow px-3 py-2.5 font-normal">{t('Type')}</th>
+                      <th className="eyebrow px-3 py-2.5 font-normal">{t('Verdict')}</th>
+                      <th className="eyebrow px-3 py-2.5 font-normal">{t('Score')}</th>
+                      <th className="eyebrow px-3 py-2.5 font-normal">{t('Seen')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -99,24 +106,24 @@ export function IOCsPage() {
                       <tr
                         key={item.id}
                         onClick={() => setSelected(item.value)}
-                        className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-surface"
+                        className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-surface-2"
                       >
                         <td className="max-w-[280px] px-3 py-2.5">
                           <span className="block truncate font-mono text-[12.5px] text-ink">
                             {item.value}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-[11px] font-semibold text-ink-2 uppercase">
-                          {item.primary_type}
+<td className="px-3 py-2.5 text-[11px] font-semibold text-ink-2 uppercase">
+                          {t(`type.${item.primary_type}`)}
                         </td>
                         <td className="px-3 py-2.5">
                           <LevelBadge level={item.latest_level as ThreatLevel | null} />
                         </td>
                         <td className="px-3 py-2.5 font-mono text-[13px] tabular-nums text-ink">
-                          {item.latest_score ?? 'â€”'}
+                          {item.latest_score ?? '—'}
                         </td>
-                        <td className="px-3 py-2.5 text-[12.5px] text-ink-2">
-                          {item.observations}Ã—
+<td className="px-3 py-2.5 text-[12.5px] text-ink-2">
+                          {item.observations}×
                         </td>
                       </tr>
                     ))}
@@ -125,8 +132,13 @@ export function IOCsPage() {
               </div>
 
               <div className="mt-4 flex items-center justify-between pt-2">
-                <p className="text-[12.5px] text-ink-3">
-                  {data.total} indicator{data.total === 1 ? '' : 's'} tracked
+<p className="text-[12.5px] text-ink-3">
+                  {t(
+                    data.total === 1
+                      ? '{count} indicator tracked'
+                      : '{count} indicators tracked',
+                    { count: data.total },
+                  )}
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
@@ -135,7 +147,7 @@ export function IOCsPage() {
                     disabled={page === 0}
                     onClick={() => setPage((p) => p - 1)}
                   >
-                    Previous
+                    {t('Previous')}
                   </Button>
                   <span className="w-16 text-center text-[12.5px] text-ink-2">
                     {page + 1} / {totalPages}
@@ -146,16 +158,18 @@ export function IOCsPage() {
                     disabled={page + 1 >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
                   >
-                    Next
+                    {t('Next')}
                   </Button>
                 </div>
               </div>
             </>
           ) : (
-            <EmptyState
+<EmptyState
               icon={<ShieldOff className="h-5 w-5" />}
-              title="No indicators yet"
-              description="Run an analysis and its indicator will be registered here automatically."
+              title={t('No indicators yet')}
+              description={t(
+                'Run an analysis and its indicator will be registered here automatically.',
+              )}
               className="py-14"
             />
           )}
@@ -165,11 +179,13 @@ export function IOCsPage() {
           {selected ? (
             <IOCDetailPanel value={selected} onClose={() => setSelected(null)} />
           ) : (
-            <Panel eyebrow="Timeline" title="Indicator history">
+<Panel eyebrow={t('Timeline')} title={t('Indicator history')}>
               <EmptyState
                 icon={<TrendingUp className="h-5 w-5" />}
-                title="Select an indicator"
-                description="Pick a row to see its observation timeline and every stored analysis."
+                title={t('Select an indicator')}
+                description={t(
+                  'Pick a row to see its observation timeline and every stored analysis.',
+                )}
                 className="py-12"
               />
             </Panel>
@@ -188,21 +204,22 @@ function IOCDetailPanel({
   onClose: () => void
 }) {
   const detail = useIOC(value)
+  const { t } = useI18n()
 
   return (
     <Panel
-      eyebrow="Timeline"
-      title="Indicator history"
+      eyebrow={t('Timeline')}
+      title={t('Indicator history')}
       action={
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Close
+          {t('Close')}
         </Button>
       }
     >
       {detail.isLoading ? (
         <div className="flex items-center justify-center gap-3 py-12 text-ink-2">
           <Spinner />
-          Loadingâ€¦
+          {t('Loading…')}
         </div>
       ) : detail.data ? (
         <div className="space-y-4">
@@ -211,8 +228,12 @@ function IOCDetailPanel({
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <LevelBadge level={detail.data.indicator.latest_level as ThreatLevel | null} />
               <span className="text-[12px] text-ink-3">
-                {detail.data.observations} observation
-                {detail.data.observations === 1 ? '' : 's'}
+                {t(
+                  detail.data.observations === 1
+                    ? '{count} observation'
+                    : '{count} observations',
+                  { count: detail.data.observations },
+                )}
               </span>
             </div>
           </div>
@@ -226,15 +247,15 @@ function IOCDetailPanel({
                 <div className="flex items-center justify-between gap-2">
                   <LevelBadge level={point.threat_level as ThreatLevel | null} />
                   <span className="font-mono text-[13px] tabular-nums text-ink">
-                    {point.threat_score ?? 'â€”'}
+                    {point.threat_score ?? '—'}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[11.5px] text-ink-3">
                   <span className="font-mono">{shortId(point.analysis_id)}</span>
                   <span>{formatDate(point.analyzed_at)}</span>
                 </div>
-                <p className="mt-1 text-[11.5px] text-ink-3">
-                  {point.malicious} malicious Â· {point.suspicious} suspicious
+<p className="mt-1 text-[11.5px] text-ink-3">
+                  {point.malicious} {t('malicious')} · {point.suspicious} {t('suspicious')}
                 </p>
               </li>
             ))}
@@ -248,15 +269,15 @@ function IOCDetailPanel({
             disabled={!detail.data.timeline[0]}
             className="w-full"
           >
-            <Boxes className="h-4 w-4" />
-            Open latest analysis
+<Boxes className="h-4 w-4" />
+            {t('Open latest analysis')}
           </Button>
         </div>
       ) : (
-        <EmptyState
+<EmptyState
           icon={<ShieldOff className="h-5 w-5" />}
-          title="Not found"
-          description="This indicator has no stored snapshots."
+          title={t('Not found')}
+          description={t('This indicator has no stored snapshots.')}
           className="py-10"
         />
       )}

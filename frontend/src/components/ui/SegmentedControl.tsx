@@ -22,7 +22,7 @@ export function SegmentedControl<T extends string>({
     <div
       role="tablist"
       className={cn(
-        'inline-flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-surface p-1',
+        'focus-ring inline-flex flex-wrap items-center gap-0.5 rounded-lg border border-border bg-surface p-1',
         className,
       )}
     >
@@ -36,10 +36,10 @@ export function SegmentedControl<T extends string>({
             aria-selected={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-colors',
+              'rounded-md px-3.5 py-1.5 text-[13px] font-medium transition-all',
               active
-                ? 'bg-surface-4 text-ink shadow-sm'
-                : 'text-ink-2 hover:text-ink',
+                ? 'bg-surface-4 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.05)]'
+                : 'text-ink-2 hover:bg-surface-2 hover:text-ink',
             )}
           >
             {option.label}

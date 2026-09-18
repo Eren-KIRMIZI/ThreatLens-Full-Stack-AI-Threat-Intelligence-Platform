@@ -37,11 +37,13 @@ import {
   useSetPinned,
   useTags,
 } from '../hooks/useIntel'
+import { useI18n } from '../i18n'
 
 export function AnalysisDetail() {
   const { analysisId = '' } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { t } = useI18n()
 
   const analysis = useAnalysis(analysisId)
   const pinned = usePinned()
@@ -68,8 +70,8 @@ export function AnalysisDetail() {
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Analysis Detail"
-        description="Full intelligence portfolio for a single investigation."
+        title={t('Analysis Detail')}
+        description={t('Full intelligence portfolio for a single investigation.')}
         action={
           <div className="flex items-center gap-2">
             <Button
@@ -80,7 +82,7 @@ export function AnalysisDetail() {
               <Pin
                 className={`h-4 w-4 ${isPinned ? 'fill-current text-accent' : ''}`}
               />
-              {isPinned ? 'Pinned' : 'Pin'}
+              {isPinned ? t('Pinned') : t('Pin')}
             </Button>
             <Button
               variant="secondary"
@@ -91,7 +93,7 @@ export function AnalysisDetail() {
               }
             >
               <Network className="h-4 w-4" />
-              Graph
+              {t('Graph')}
             </Button>
             <Button
               variant="secondary"
@@ -102,11 +104,11 @@ export function AnalysisDetail() {
               }
             >
               <Download className="h-4 w-4" />
-              PDF
+              {t('PDF')}
             </Button>
             <Button variant="secondary" onClick={() => navigate(-1)}>
               <ArrowLeft className="h-4 w-4" />
-              Back
+              {t('Back')}
             </Button>
           </div>
         }
@@ -116,22 +118,22 @@ export function AnalysisDetail() {
         <Panel>
           <div className="flex items-center justify-center gap-3 py-14 text-ink-2">
             <Spinner className="h-5 w-5" />
-            Loading analysis…
+            {t('Loading analysis…')}
           </div>
         </Panel>
       ) : error ? (
         <Panel>
           <EmptyState
-            title="Analysis could not be loaded"
+            title={t('Analysis could not be loaded')}
             description={
-              error instanceof Error ? error.message : 'Unknown error.'
+              error instanceof Error ? error.message : t('Unknown error.')
             }
             action={
               <Button
                 variant="secondary"
                 onClick={() => navigate('/history')}
               >
-                Back to history
+                {t('Back to history')}
               </Button>
             }
           />
@@ -142,7 +144,7 @@ export function AnalysisDetail() {
             <AnalysisResultView result={analysis.data} />
 
             <div className="grid gap-4 lg:grid-cols-2">
-              <Panel eyebrow="Exports" title="Take the intelligence with you">
+              <Panel eyebrow={t('Exports')} title={t('Take the intelligence with you')}>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="secondary"
@@ -151,40 +153,41 @@ export function AnalysisDetail() {
                     }
                   >
                     <Download className="h-4 w-4" />
-                    JSON
+                    {t('JSON')}
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={() => window.open(stixUrl(analysisId), '_blank')}
                   >
                     <FileCode2 className="h-4 w-4" />
-                    STIX 2.1
+                    {t('STIX 2.1')}
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={() => window.open(yaraUrl(analysisId), '_blank')}
                   >
                     <FileCode2 className="h-4 w-4" />
-                    YARA
+                    {t('YARA')}
                   </Button>
                   <Button
                     variant="secondary"
                     onClick={() => window.open(sigmaUrl(analysisId), '_blank')}
                   >
                     <FileCode2 className="h-4 w-4" />
-                    Sigma
+                    {t('Sigma')}
                   </Button>
                 </div>
                 <p className="mt-3 text-[12px] leading-relaxed text-ink-3">
-                  STIX bundles, YARA and Sigma rules are generated from the
-                  stored evidence — ready for your SIEM or detection pipeline.
+                  {t(
+                    'STIX bundles, YARA and Sigma rules are generated from the stored evidence — ready for your SIEM or detection pipeline.',
+                  )}
                 </p>
               </Panel>
 
-              <Panel eyebrow="Analyst workspace" title="Tags & notes">
+              <Panel eyebrow={t('Analyst workspace')} title={t('Tags & notes')}>
                 <div className="space-y-4">
                   <div>
-                    <span className="eyebrow">Tags</span>
+                    <span className="eyebrow">{t('Tags')}</span>
                     <div className="mt-2 flex flex-wrap items-center gap-1.5">
                       {(tags.data ?? []).map((tag) => (
                         <span
@@ -196,7 +199,7 @@ export function AnalysisDetail() {
                       ))}
                       {(tags.data ?? []).length === 0 && (
                         <span className="text-[12px] text-ink-3">
-                          No tags yet.
+                          {t('No tags yet.')}
                         </span>
                       )}
                     </div>
@@ -204,7 +207,7 @@ export function AnalysisDetail() {
                       <input
                         value={tagInput}
                         onChange={(event) => setTagInput(event.target.value)}
-                        placeholder="Add tag…"
+                        placeholder={t('Add tag…')}
                         className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-surface-3 px-3 text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
                       />
                       <Button
@@ -222,7 +225,7 @@ export function AnalysisDetail() {
                   </div>
 
                   <div>
-                    <span className="eyebrow">Notes</span>
+                    <span className="eyebrow">{t('Notes')}</span>
                     <ul className="mt-2 space-y-2">
                       {(notes.data ?? []).map((note) => (
                         <li
@@ -239,7 +242,7 @@ export function AnalysisDetail() {
                       ))}
                       {(notes.data ?? []).length === 0 && (
                         <li className="text-[12px] text-ink-3">
-                          No analyst notes yet.
+                          {t('No analyst notes yet.')}
                         </li>
                       )}
                     </ul>
@@ -247,7 +250,7 @@ export function AnalysisDetail() {
                       value={noteInput}
                       onChange={(event) => setNoteInput(event.target.value)}
                       rows={2}
-                      placeholder="Add a note for the team…"
+                      placeholder={t('Add a note for the team…')}
                       className="mt-2 w-full rounded-lg border border-border bg-surface-3 px-3 py-2 text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
                     />
                     <Button
@@ -261,7 +264,7 @@ export function AnalysisDetail() {
                         )
                       }
                     >
-                      Add note
+                      {t('Add note')}
                     </Button>
                   </div>
                 </div>
@@ -270,8 +273,8 @@ export function AnalysisDetail() {
 
             {!analysis.data.ai && (
               <Panel
-                eyebrow="AI interpretation"
-                title="Unlock the evidence-based narrative"
+                eyebrow={t('AI interpretation')}
+                title={t('Unlock the evidence-based narrative')}
                 action={
                   <Button
                     onClick={() => enrich.mutate()}
@@ -280,12 +283,12 @@ export function AnalysisDetail() {
                     {enrich.isPending ? (
                       <>
                         <Spinner />
-                        Generating…
+                        {t('Generating…')}
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4" />
-                        Generate AI analysis
+                        {t('Generate AI analysis')}
                       </>
                     )}
                   </Button>
@@ -294,10 +297,9 @@ export function AnalysisDetail() {
                 <div className="flex items-center gap-3 rounded-lg border border-dashed border-border-strong bg-surface px-4 py-6">
                   <Sparkles className="h-5 w-5 shrink-0 text-accent" />
                   <p className="text-[13px] leading-relaxed text-ink-2">
-                    The AI interpretation explains tactics, capabilities,
-                    recommendations and correlations — strictly derived from
-                    the evidence already collected. Nothing is sent besides the
-                    normalized report.
+                    {t(
+                      'The AI interpretation explains tactics, capabilities, recommendations and correlations — strictly derived from the evidence already collected. Nothing is sent besides the normalized report.',
+                    )}
                   </p>
                 </div>
               </Panel>
@@ -309,10 +311,10 @@ export function AnalysisDetail() {
       {enrich.isError && (
         <Panel className="border-critical/40">
           <p className="text-[13px] text-ink-2">
-            AI generation failed:{' '}
+            {t('AI generation failed:')}{' '}
             {enrich.error instanceof Error
               ? enrich.error.message
-              : 'Unknown error.'}
+              : t('Unknown error.')}
           </p>
         </Panel>
       )}
@@ -322,15 +324,15 @@ export function AnalysisDetail() {
           <Spinner />
           <RefreshCw className="h-4 w-4 animate-spin text-ink-3" />
           <span className="text-[13px]">
-            Interpreting evidence with the configured model…
+            {t('Interpreting evidence with the configured model…')}
           </span>
         </div>
       )}
 
       {enrich.isSuccess && enrich.data && (
         <Panel
-          eyebrow="AI interpretation"
-          title="Evidence-based analysis"
+          eyebrow={t('AI interpretation')}
+          title={t('Evidence-based analysis')}
           action={
             <Button
               variant="ghost"
@@ -339,7 +341,7 @@ export function AnalysisDetail() {
               disabled={enrich.isPending}
             >
               <RefreshCw className="h-3.5 w-3.5" />
-              Regenerate
+              {t('Regenerate')}
             </Button>
           }
         >

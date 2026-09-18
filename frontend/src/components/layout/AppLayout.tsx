@@ -4,8 +4,10 @@ import { Outlet } from 'react-router-dom'
 import { Sidebar } from './Sidebar'
 import { StatusBar } from './StatusBar'
 import { TopBar } from './TopBar'
+import { useI18n } from '../../i18n'
 
 export function AppLayout() {
+  const { t } = useI18n()
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   return (
@@ -20,7 +22,7 @@ export function AppLayout() {
         <div className="fixed inset-0 z-40 flex md:hidden">
           <button
             type="button"
-            aria-label="Close navigation"
+            aria-label={t('Close navigation')}
             className="absolute inset-0 bg-black/60"
             onClick={() => setMobileNavOpen(false)}
           />
@@ -33,7 +35,7 @@ export function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar onMenuClick={() => setMobileNavOpen(true)} />
         <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[1200px] px-4 py-6 md:px-8 md:py-8">
+          <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-8 md:py-8">
             <Outlet />
           </div>
         </main>

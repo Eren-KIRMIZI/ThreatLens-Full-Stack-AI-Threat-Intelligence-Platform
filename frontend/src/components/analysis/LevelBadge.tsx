@@ -1,5 +1,6 @@
 import { cn } from '../../utils/cn'
-import { levelLabel, LEVEL_STYLE } from './level'
+import { LEVEL_STYLE } from './level'
+import { useI18n } from '../../i18n'
 import type { ThreatLevel } from '../../types'
 
 interface LevelBadgeProps {
@@ -8,6 +9,7 @@ interface LevelBadgeProps {
 }
 
 export function LevelBadge({ level, className }: LevelBadgeProps) {
+  const { t } = useI18n()
   if (!level) {
     return (
       <span
@@ -24,7 +26,7 @@ export function LevelBadge({ level, className }: LevelBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[12px] font-semibold uppercase tracking-wide',
+        'inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase',
         style.text,
         style.bg,
         style.border,
@@ -32,7 +34,7 @@ export function LevelBadge({ level, className }: LevelBadgeProps) {
       )}
     >
       <span className={cn('h-1.5 w-1.5 rounded-full bg-current')} />
-      {levelLabel(level)}
+      {t(level)}
     </span>
   )
 }

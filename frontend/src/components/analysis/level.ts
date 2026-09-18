@@ -37,11 +37,6 @@ export const LEVEL_STYLE: Record<
   },
 }
 
-export function levelLabel(level: ThreatLevel | null | undefined): string {
-  if (!level) return '—'
-  return level.charAt(0).toUpperCase() + level.slice(1)
-}
-
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)

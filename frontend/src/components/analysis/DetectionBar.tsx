@@ -1,4 +1,5 @@
 import type { DetectionStats } from '../../types'
+import { useI18n } from '../../i18n'
 
 interface DetectionBarProps {
   stats: DetectionStats
@@ -6,17 +7,17 @@ interface DetectionBarProps {
 
 const SEGMENTS: {
   key: keyof DetectionStats
-  label: string
   className: string
 }[] = [
-  { key: 'malicious', label: 'Malicious', className: 'bg-critical' },
-  { key: 'suspicious', label: 'Suspicious', className: 'bg-elevated' },
-  { key: 'undetected', label: 'Undetected', className: 'bg-surface-4' },
-  { key: 'harmless', label: 'Harmless', className: 'bg-ok' },
-  { key: 'timeout', label: 'Timeout', className: 'bg-ink-3' },
+  { key: 'malicious', className: 'bg-critical' },
+  { key: 'suspicious', className: 'bg-elevated' },
+  { key: 'undetected', className: 'bg-surface-4' },
+  { key: 'harmless', className: 'bg-ok' },
+  { key: 'timeout', className: 'bg-ink-3' },
 ]
 
 export function DetectionBar({ stats }: DetectionBarProps) {
+  const { t } = useI18n()
   const total = Math.max(
     1,
     stats.malicious +
@@ -37,7 +38,7 @@ export function DetectionBar({ stats }: DetectionBarProps) {
               key={segment.key}
               className={segment.className}
               style={{ width: `${width}%` }}
-              title={`${segment.label}: ${stats[segment.key]}`}
+              title={`${t(segment.key)}: ${stats[segment.key]}`}
             />
           )
         })}
@@ -49,7 +50,7 @@ export function DetectionBar({ stats }: DetectionBarProps) {
             className="flex items-center gap-1.5 text-[12px] text-ink-2"
           >
             <span className={`h-2 w-2 rounded-sm ${segment.className}`} />
-            <span>{segment.label}</span>
+            <span>{t(segment.key)}</span>
             <span className="font-semibold text-ink tabular-nums">
               {stats[segment.key]}
             </span>

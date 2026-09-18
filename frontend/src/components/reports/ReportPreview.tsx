@@ -1,17 +1,19 @@
 import { Braces, ListChecks, Table2 } from 'lucide-react'
 
 import type { ReportBlock, ReportDocument } from '../../types'
+import { useI18n } from '../../i18n'
 
 function FactsBlock({
   facts,
 }: {
   facts: NonNullable<ReportBlock['facts']>
 }) {
+  const { t } = useI18n()
   return (
     <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
       {facts.map((row) => (
         <div key={row.label} className="min-w-0">
-          <dt className="eyebrow mb-0.5">{row.label}</dt>
+          <dt className="eyebrow mb-0.5">{t(row.label)}</dt>
           <dd className="break-words text-[13px] text-ink">{row.value}</dd>
         </div>
       ))}
@@ -20,6 +22,7 @@ function FactsBlock({
 }
 
 function TableBlock({ block }: { block: ReportBlock }) {
+  const { t } = useI18n()
   const table = block.table
   if (!table) return null
   return (
@@ -32,7 +35,7 @@ function TableBlock({ block }: { block: ReportBlock }) {
                 key={column}
                 className="eyebrow px-4 py-2.5 font-normal"
               >
-                {column}
+                {t(column)}
               </th>
             ))}
           </tr>
@@ -41,7 +44,7 @@ function TableBlock({ block }: { block: ReportBlock }) {
           {table.rows.map((row, rowIndex) => (
             <tr
               key={rowIndex}
-              className="border-b border-border/60 last:border-0 hover:bg-surface"
+              className="border-b border-border/60 last:border-0 hover:bg-surface-2"
             >
               {row.map((cell, cellIndex) => (
                 <td
@@ -78,6 +81,7 @@ interface ReportPreviewProps {
 }
 
 export function ReportPreview({ report }: ReportPreviewProps) {
+  const { t } = useI18n()
   const blocks = [...report.blocks].sort((a, b) =>
     BLOCK_ORDER[a.kind].localeCompare(BLOCK_ORDER[b.kind]),
   )
@@ -93,7 +97,7 @@ export function ReportPreview({ report }: ReportPreviewProps) {
             <span className="grid h-6 w-6 place-items-center rounded-md bg-surface-3 text-accent">
               <BlockIcon kind={block.kind} />
             </span>
-            {block.heading}
+            {t(block.heading)}
           </h4>
           <div className="px-4 py-3.5">
             {block.kind === 'paragraph' && (

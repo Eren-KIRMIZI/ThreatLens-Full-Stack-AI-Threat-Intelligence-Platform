@@ -12,9 +12,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-accent text-bg font-semibold hover:bg-accent-strong disabled:bg-surface-4 disabled:text-ink-3',
+    'bg-accent text-bg font-semibold shadow-[0_0_0_1px_rgb(0_0_0/0.08),0_1px_2px_rgb(0_0_0/0.4)] hover:bg-accent-strong hover:shadow-[0_1px_2px_rgb(0_0_0/0.35)] active:scale-[0.985] disabled:bg-surface-4 disabled:text-ink-3 disabled:shadow-none',
   secondary:
-    'border border-border-strong bg-surface-3 text-ink hover:bg-surface-4 disabled:text-ink-3',
+    'border border-border-strong bg-surface-3 text-ink shadow-[inset_0_1px_0_rgb(255_255_255/0.04)] hover:bg-surface-4 hover:border-ink-3/70 active:scale-[0.985] disabled:text-ink-3 disabled:hover:bg-surface-3 disabled:hover:border-border-strong',
   ghost: 'text-ink-2 hover:bg-surface-2 hover:text-ink disabled:text-ink-3',
 }
 
@@ -34,7 +34,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center font-medium transition-colors focus:ring-2 focus:ring-accent/25 focus:outline-none disabled:cursor-not-allowed',
+        'focus-ring inline-flex items-center justify-center font-medium transition-all disabled:cursor-not-allowed',
         VARIANTS[variant],
         SIZES[size],
         className,

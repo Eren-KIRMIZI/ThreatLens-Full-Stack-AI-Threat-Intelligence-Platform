@@ -30,6 +30,7 @@ import { formatDate, shortId, statsTotal } from '../components/analysis/level'
 import { useHistoryPage } from '../hooks/useAnalyses'
 import { useDigest, useGlobalSearch, useProviderHealth } from '../hooks/useIntel'
 import { guessIndicatorType } from '../utils/validate'
+import { useI18n } from '../i18n'
 import type { ThreatLevel } from '../types'
 
 const DIGEST_WINDOWS = [
@@ -68,6 +69,7 @@ function toDistribution(
 
 export function Dashboard() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const history = useHistoryPage({ filter: 'all', limit: 50 })
   const [digestWindow, setDigestWindow] = useState('week')
   const [searchQuery, setSearchQuery] = useState('')
@@ -99,11 +101,11 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Dashboard"
-        description="A live overview of the threat intelligence you've gathered."
+        title={t('Dashboard')}
+        description={t("A live overview of the threat intelligence you've gathered.")}
         action={
           <Button onClick={() => navigate('/analyze')}>
-            New analysis
+            {t('New analysis')}
             <ArrowRight className="h-4 w-4" />
           </Button>
         }
@@ -111,42 +113,42 @@ export function Dashboard() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
-          label="Total analyses"
+          label={t('Total analyses')}
           value={history.isLoading ? '—' : total}
-          hint="Across all indicator types"
+          hint={t('Across all indicator types')}
         />
         <StatCard
-          label="Flagged"
+          label={t('Flagged')}
           value={history.isLoading ? '—' : flagged}
-          hint="Malicious or critical verdicts"
+          hint={t('Malicious or critical verdicts')}
           valueClass={
             flagged > 0 ? 'text-critical' : 'text-ink'
           }
         />
         <StatCard
-          label="Coverage"
+          label={t('Coverage')}
           value={history.isLoading ? '—' : items.length}
-          hint="Latest 50 loaded for charts"
+          hint={t('Latest 50 loaded for charts')}
         />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
         <Panel
-          eyebrow="Verdict mix"
-          title="Level distribution"
+          eyebrow={t('Verdict mix')}
+          title={t('Level distribution')}
           className="lg:col-span-2"
           action={<BarChart3 className="h-4 w-4 text-ink-3" aria-hidden />}
         >
           {history.isLoading ? (
             <div className="flex items-center justify-center gap-3 py-14 text-ink-2">
               <Spinner />
-              Loading…
+              {t('Loading…')}
             </div>
           ) : distribution.length === 0 ? (
             <EmptyState
               icon={<ShieldQuestion className="h-5 w-5" />}
-              title="Nothing charted yet"
-              description="Analyze your first indicator to see the verdict mix."
+              title={t('Nothing charted yet')}
+              description={t('Analyze your first indicator to see the verdict mix.')}
               className="py-10"
             />
           ) : (
@@ -176,8 +178,7 @@ export function Dashboard() {
                       }}
                       formatter={(value, name) => [
                         value as number,
-                        String(name).charAt(0).toUpperCase() +
-                          String(name).slice(1),
+                        t(String(name)),
                       ]}
                     />
                   </PieChart>
@@ -194,7 +195,7 @@ export function Dashboard() {
                         className="h-2.5 w-2.5 rounded-sm"
                         style={{ backgroundColor: entry.color }}
                       />
-                      <span className="capitalize">{entry.name}</span>
+                      <span className="capitalize">{t(entry.name)}</span>
                     </span>
                     <span className="font-mono tabular-nums text-ink">
                       {entry.value}
@@ -207,8 +208,8 @@ export function Dashboard() {
         </Panel>
 
         <Panel
-          eyebrow="Recent work"
-          title="Latest analyses"
+          eyebrow={t('Recent work')}
+          title={t('Latest analyses')}
           className="lg:col-span-3"
           action={
             <Button
@@ -216,7 +217,7 @@ export function Dashboard() {
               size="sm"
               onClick={() => navigate('/history')}
             >
-              View all
+              {t('View all')}
               <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           }
@@ -224,13 +225,13 @@ export function Dashboard() {
           {history.isLoading ? (
             <div className="flex items-center justify-center gap-3 py-14 text-ink-2">
               <Spinner />
-              Loading…
+              {t('Loading…')}
             </div>
           ) : recent.length === 0 ? (
             <EmptyState
               icon={<Activity className="h-5 w-5" />}
-              title="No activity yet"
-              description="Your most recent investigations will appear here."
+              title={t('No activity yet')}
+              description={t('Your most recent investigations will appear here.')}
               className="py-10"
             />
           ) : (
@@ -249,7 +250,10 @@ export function Dashboard() {
                       </p>
                       <p className="truncate text-[11.5px] text-ink-3">
                         {item.meaningful_name ?? shortId(item.analysis_id)} ·{' '}
-                        {item.detected_vendors} of {statsTotal(item.stats)} flagged
+                        {t('{count}/{total} flagged', {
+                          count: item.detected_vendors,
+                          total: statsTotal(item.stats),
+                        })}
                       </p>
                     </div>
                     <div className="text-right">
@@ -270,26 +274,26 @@ export function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Panel
-          eyebrow="Global search"
-          title="Find anything"
+          eyebrow={t('Global search')}
+          title={t('Find anything')}
           action={<Search className="h-4 w-4 text-ink-3" aria-hidden />}
         >
           <input
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Indicator, IOC or note…"
+            placeholder={t('Indicator, IOC or note…')}
             spellCheck={false}
-            className="h-10 w-full rounded-lg border border-border bg-surface-3 px-3 text-[13px] text-ink placeholder:text-ink-3 focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+            className="focus-ring h-10 w-full rounded-lg border border-border bg-surface-3 px-3 text-[13px] text-ink placeholder:text-ink-3 focus:border-accent/50"
           />
           <div className="mt-3">
             {searchQuery.trim().length < 2 ? (
               <p className="text-[12.5px] text-ink-3">
-                Type at least two characters to search analyses, IOCs and cases.
+                {t('Type at least two characters to search analyses, IOCs and cases.')}
               </p>
             ) : search.isLoading ? (
               <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
                 <Spinner />
-                Searching…
+                {t('Searching…')}
               </div>
             ) : search.data && search.data.results.length > 0 ? (
               <ul className="max-h-64 space-y-1.5 overflow-y-auto">
@@ -315,14 +319,14 @@ export function Dashboard() {
                 ))}
               </ul>
             ) : (
-              <p className="text-[12.5px] text-ink-3">No matches.</p>
+              <p className="text-[12.5px] text-ink-3">{t('No matches.')}</p>
             )}
           </div>
         </Panel>
 
         <Panel
-          eyebrow="Intelligence digest"
-          title="Period summary"
+          eyebrow={t('Intelligence digest')}
+          title={t('Period summary')}
           action={<CalendarRange className="h-4 w-4 text-ink-3" aria-hidden />}
         >
           <div className="mb-3 flex gap-1">
@@ -337,14 +341,14 @@ export function Dashboard() {
                     : 'text-ink-2 hover:text-ink'
                 }`}
               >
-                {option.label}
+                {t(option.label)}
               </button>
             ))}
           </div>
           {digest.isLoading ? (
             <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
               <Spinner />
-              Building digest…
+              {t('Building digest…')}
             </div>
           ) : (
             <ul className="space-y-2">
@@ -354,7 +358,7 @@ export function Dashboard() {
                   className="flex items-center justify-between border-b border-border/60 pb-2 last:border-0"
                 >
                   <span className="text-[12.5px] text-ink-2">
-                    {section.label}
+                    {t(section.label)}
                   </span>
                   <span className="font-mono text-[13px] tabular-nums text-ink">
                     {section.value}
@@ -366,14 +370,14 @@ export function Dashboard() {
         </Panel>
 
         <Panel
-          eyebrow="Enrichment"
-          title="Provider health"
+          eyebrow={t('Enrichment')}
+          title={t('Provider health')}
           action={<Server className="h-4 w-4 text-ink-3" aria-hidden />}
         >
           {providers.isLoading ? (
             <div className="flex items-center gap-2 text-[12.5px] text-ink-2">
               <Spinner />
-              Loading…
+              {t('Loading…')}
             </div>
           ) : providers.data && providers.data.rows.length > 0 ? (
             <ul className="space-y-1.5">
@@ -402,7 +406,7 @@ export function Dashboard() {
             </ul>
           ) : (
             <p className="text-[12.5px] text-ink-3">
-              No enrichment activity recorded yet.
+              {t('No enrichment activity recorded yet.')}
             </p>
           )}
         </Panel>
@@ -435,10 +439,10 @@ export function Dashboard() {
             </span>
             <div>
               <p className="text-[13.5px] font-semibold text-ink">
-                {feature.title}
+                {t(feature.title)}
               </p>
               <p className="mt-1 text-[12.5px] leading-relaxed text-ink-2">
-                {feature.text}
+                {t(feature.text)}
               </p>
             </div>
           </div>
@@ -457,14 +461,14 @@ export function Dashboard() {
             key={quick.value}
             type="button"
             onClick={() => quickAnalyze(quick.value)}
-            className="panel group flex items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-surface md:px-5"
+            className="panel group flex items-center justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-surface-2 md:px-5"
           >
             <div>
               <p className="font-mono text-[12.5px] text-ink group-hover:text-accent-strong">
                 {quick.value}
               </p>
               <p className="mt-0.5 text-[11.5px] text-ink-3">
-                Quick-analyze as {quick.type}
+                {t('Quick-analyze as {type}', { type: t(quick.type) })}
               </p>
             </div>
             <ArrowRight className="h-4 w-4 shrink-0 text-ink-3 group-hover:text-accent" />

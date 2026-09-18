@@ -19,11 +19,11 @@ export function Panel({
   return (
     <section className={cn('panel', className)} {...rest}>
       {(title || eyebrow || action) && (
-        <header className="flex items-center justify-between border-b border-border px-4 py-3 md:px-5">
-          <div>
+        <header className="flex items-center justify-between gap-3 border-b border-border/70 px-4 py-3.5 md:px-5">
+          <div className="min-w-0">
             {eyebrow && <div className="eyebrow mb-1">{eyebrow}</div>}
             {title && (
-              <h3 className="text-[14px] font-semibold tracking-tight text-ink">
+              <h3 className="truncate text-[14.5px] font-semibold tracking-tight text-ink">
                 {title}
               </h3>
             )}

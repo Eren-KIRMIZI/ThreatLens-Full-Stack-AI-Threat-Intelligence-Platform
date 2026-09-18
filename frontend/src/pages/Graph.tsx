@@ -23,6 +23,7 @@ import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { Spinner } from '../components/ui/Spinner'
 import { fetchGraph } from '../services/api'
+import { useI18n } from '../i18n'
 import type { GraphNode, GraphNodeKind, IOCGraph } from '../types'
 import { cn } from '../utils/cn'
 
@@ -33,9 +34,9 @@ const KIND_STYLES: Record<GraphNodeKind, { ring: string; chip: string; tint: str
     tint: 'border-emerald-400/30',
   },
   source: {
-    ring: 'ring-sky-400/30',
-    chip: 'bg-sky-400/15 text-sky-300',
-    tint: 'border-sky-400/30',
+    ring: 'ring-teal-400/30',
+    chip: 'bg-teal-400/15 text-teal-300',
+    tint: 'border-teal-400/30',
   },
   evidence: {
     ring: 'ring-violet-400/30',
@@ -51,6 +52,7 @@ const KIND_STYLES: Record<GraphNodeKind, { ring: string; chip: string; tint: str
 
 function GraphNodeCard({ data, selected }: NodeProps<Node<{ node: GraphNode }>>) {
   const { node } = data
+  const { t } = useI18n()
   const styles = KIND_STYLES[node.kind]!
   return (
     <div
@@ -78,7 +80,7 @@ function GraphNodeCard({ data, selected }: NodeProps<Node<{ node: GraphNode }>>)
             styles.chip,
           )}
         >
-          {node.kind}
+          {t(`kind.${node.kind}`)}
         </span>
       </div>
       {node.subtitle ? (
@@ -86,7 +88,7 @@ function GraphNodeCard({ data, selected }: NodeProps<Node<{ node: GraphNode }>>)
       ) : null}
       {node.indicator_type ? (
         <p className="mt-1 text-[9px] uppercase tracking-wider text-slate-500">
-          {node.indicator_type}
+          {t(`type.${node.indicator_type}`)}
         </p>
       ) : null}
       <Handle type="source" position={Position.Right} className="!bg-slate-500" />
@@ -160,6 +162,7 @@ function buildLayout(graph: IOCGraph): { nodes: Node[]; edges: Edge[] } {
 export function GraphPage() {
   const { analysisId = '' } = useParams()
   const navigate = useNavigate()
+  const { t } = useI18n()
 
   const graph = useQuery({
     queryKey: ['graph', analysisId],
@@ -177,12 +180,14 @@ export function GraphPage() {
   return (
     <div className="flex h-full flex-col space-y-5">
       <PageHeader
-        title="IOC Relationship Graph"
-        description="Providers, evidence and related indicators connected to the analyzed IOC."
+        title={t('IOC Relationship Graph')}
+        description={t(
+          'Providers, evidence and related indicators connected to the analyzed IOC.',
+        )}
         action={
           <Button variant="secondary" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
-            Back
+            {t('Back')}
           </Button>
         }
       />
@@ -191,25 +196,29 @@ export function GraphPage() {
         <Panel>
           <div className="flex items-center justify-center gap-3 py-14 text-ink-2">
             <Spinner className="h-5 w-5" />
-            Building graph…
+            {t('Building graph…')}
           </div>
         </Panel>
       ) : error || !graph.data ? (
         <Panel>
           <EmptyState
-            title="Graph could not be loaded"
-            description={error instanceof Error ? error.message : 'Unknown error.'}
+            title={t('Graph could not be loaded')}
+            description={
+              error instanceof Error ? error.message : t('Unknown error.')
+            }
           />
         </Panel>
       ) : graph.data.nodes.length <= 1 ? (
         <Panel>
           <EmptyState
-            title="Not enough evidence yet"
-            description="Run an analysis with multi-provider enrichment enabled to unlock the relationship graph."
+            title={t('Not enough evidence yet')}
+            description={t(
+              'Run an analysis with multi-provider enrichment enabled to unlock the relationship graph.',
+            )}
             action={
               <Button variant="secondary" onClick={() => navigate(`/analysis/${analysisId}`)}>
                 <Network className="h-4 w-4" />
-                Open analysis
+                {t('Open analysis')}
               </Button>
             }
           />
@@ -235,7 +244,7 @@ export function GraphPage() {
                   const kind = (node.data as { node: GraphNode }).node.kind
                   const colors = {
                     root: '#34d399',
-                    source: '#38bdf8',
+                    source: '#2dd4bf',
                     evidence: '#a78bfa',
                     indicator: '#fbbf24',
                   } as const
@@ -243,10 +252,10 @@ export function GraphPage() {
                 }}
               />
               <div className="pointer-events-none absolute left-3 top-3 z-10 space-y-1.5 font-mono text-[10px] text-slate-400">
-                <LegendDot color="#34d399" label="root indicator" />
-                <LegendDot color="#38bdf8" label="provider source" />
-                <LegendDot color="#a78bfa" label="evidence item" />
-                <LegendDot color="#fbbf24" label="related IOC" />
+                <LegendDot color="#34d399" label={t('root indicator')} />
+                <LegendDot color="#2dd4bf" label={t('provider source')} />
+                <LegendDot color="#a78bfa" label={t('evidence item')} />
+                <LegendDot color="#fbbf24" label={t('related IOC')} />
               </div>
             </ReactFlow>
           </div>

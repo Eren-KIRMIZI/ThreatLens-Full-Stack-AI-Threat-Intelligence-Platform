@@ -1,5 +1,6 @@
 import { useHealth } from '../../hooks/useHealth'
 import { cn } from '../../utils/cn'
+import { useI18n } from '../../i18n'
 
 interface StatusBarProps {
   className?: string
@@ -7,19 +8,20 @@ interface StatusBarProps {
 
 export function StatusBar({ className }: StatusBarProps) {
   const { data, isError, isPending } = useHealth()
+  const { t } = useI18n()
 
   const state = isError
-    ? { label: 'Unreachable', dotClass: 'bg-critical', pulse: false }
+    ? { label: t('Unreachable'), dotClass: 'bg-critical', pulse: false }
     : isPending
-      ? { label: 'Checking…', dotClass: 'bg-ink-3', pulse: true }
+      ? { label: t('Checking…'), dotClass: 'bg-ink-3', pulse: true }
       : data?.status === 'ok'
-        ? { label: 'Operational', dotClass: 'bg-ok', pulse: false }
-        : { label: 'Degraded', dotClass: 'bg-warn', pulse: false }
+        ? { label: t('Operational'), dotClass: 'bg-ok', pulse: false }
+        : { label: t('Degraded'), dotClass: 'bg-warn', pulse: false }
 
   return (
     <footer
       className={cn(
-        'flex h-9 shrink-0 items-center justify-between border-t border-border bg-surface px-4 font-mono text-[11px] text-ink-3 md:px-6',
+        'flex h-9 shrink-0 items-center justify-between border-t border-border/80 bg-surface px-4 font-mono text-[11px] text-ink-3 md:px-6',
         className,
       )}
     >
@@ -31,13 +33,16 @@ export function StatusBar({ className }: StatusBarProps) {
             state.pulse && 'animate-pulse',
           )}
         />
-        API Status: {state.label}
-      </span>
-      {data && (
-        <span className="hidden md:inline">
-          ThreatLens v{data.version} · {data.environment}
+        <span className="text-ink-2">
+          {t('API Status:')} {state.label}
         </span>
-      )}
+      </span>
+      <span className="hidden items-center gap-1.5 md:inline-flex">
+        <span className="h-1 w-1 rounded-full bg-ink-3" />
+        <span>
+          ThreatLens v{data?.version ?? '—'} · {data?.environment ?? '—'}
+        </span>
+      </span>
     </footer>
   )
 }

@@ -31,6 +31,7 @@ import {
   useWatchlist,
 } from '../hooks/useIntel'
 import type { ThreatLevel } from '../types'
+import { useI18n } from '../i18n'
 
 const TABS = [
   { value: 'items', label: 'Watchlist' },
@@ -46,16 +47,26 @@ const CONDITIONS = [
 ]
 
 export function WatchlistPage() {
+  const { t } = useI18n()
   const [tab, setTab] = useState('items')
 
   return (
     <div className="space-y-5">
       <PageHeader
-        title="Watchlist & Alerts"
-        description="Continuously re-check indicators and get notified when alert rules fire."
+        title={t('Watchlist & Alerts')}
+        description={t(
+          'Continuously re-check indicators and get notified when alert rules fire.',
+        )}
       />
 
-      <SegmentedControl options={TABS} value={tab} onChange={setTab} />
+      <SegmentedControl
+        options={TABS.map((tabOption) => ({
+          ...tabOption,
+          label: t(tabOption.label),
+        }))}
+        value={tab}
+        onChange={setTab}
+      />
 
       {tab === 'items' && <WatchlistItems />}
       {tab === 'rules' && <AlertRules />}
@@ -66,6 +77,7 @@ export function WatchlistPage() {
 
 function WatchlistItems() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const watchlist = useWatchlist()
   const add = useAddWatchlistItem()
   const remove = useRemoveWatchlistItem()
@@ -81,8 +93,8 @@ function WatchlistItems() {
   return (
     <div className="space-y-4">
       <Panel
-        eyebrow="Monitor"
-        title="Watched indicators"
+        eyebrow={t('Monitor')}
+        title={t('Watched indicators')}
         action={
           <Button
             variant="secondary"
@@ -95,7 +107,7 @@ function WatchlistItems() {
             ) : (
               <RefreshCw className="h-3.5 w-3.5" />
             )}
-            Rescan all
+            {t('Rescan all')}
           </Button>
         }
       >
@@ -105,16 +117,16 @@ function WatchlistItems() {
             onChange={(event) => setType(event.target.value)}
             className="h-10 rounded-lg border border-border bg-surface-3 px-2 text-[12.5px] text-ink"
           >
-            {['HASH', 'URL', 'DOMAIN', 'IP'].map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {['HASH', 'URL', 'DOMAIN', 'IP'].map((tp) => (
+              <option key={tp} value={tp}>
+                {t(`type.${tp}`)}
               </option>
             ))}
           </select>
           <input
             value={value}
             onChange={(event) => setValue(event.target.value)}
-            placeholder="Add an indicator to monitor…"
+            placeholder={t('Add an indicator to monitor…')}
             className="h-10 min-w-[220px] flex-1 rounded-lg border border-border bg-surface-3 px-3 font-mono text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
           />
           <Button
@@ -127,31 +139,31 @@ function WatchlistItems() {
             }
           >
             <Plus className="h-4 w-4" />
-            Add
+            {t('Add')}
           </Button>
         </div>
 
         {add.isError && (
           <p className="mb-3 text-[12.5px] text-critical">
-            {add.error instanceof Error ? add.error.message : 'Could not add.'}
+            {add.error instanceof Error ? add.error.message : t('Could not add.')}
           </p>
         )}
 
         {watchlist.isLoading ? (
           <div className="flex items-center justify-center gap-3 py-14 text-ink-2">
             <Spinner />
-            Loading watchlist…
+            {t('Loading watchlist…')}
           </div>
         ) : data && data.items.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="border-b border-border bg-surface">
-                  <th className="eyebrow px-3 py-2.5 font-normal">Indicator</th>
-                  <th className="eyebrow px-3 py-2.5 font-normal">Type</th>
-                  <th className="eyebrow px-3 py-2.5 font-normal">Last check</th>
-                  <th className="eyebrow px-3 py-2.5 font-normal">State</th>
-                  <th className="eyebrow px-3 py-2.5 font-normal">Actions</th>
+                  <th className="eyebrow px-3 py-2.5 font-normal">{t('Indicator')}</th>
+                  <th className="eyebrow px-3 py-2.5 font-normal">{t('Type')}</th>
+                  <th className="eyebrow px-3 py-2.5 font-normal">{t('Last check')}</th>
+                  <th className="eyebrow px-3 py-2.5 font-normal">{t('State')}</th>
+                  <th className="eyebrow px-3 py-2.5 font-normal">{t('Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -166,12 +178,12 @@ function WatchlistItems() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 text-[11px] font-semibold text-ink-2 uppercase">
-                      {item.primary_type}
+                      {t(`type.${item.primary_type}`)}
                     </td>
                     <td className="px-3 py-2.5 text-[12.5px] whitespace-nowrap text-ink-2">
                       {item.last_checked_at
                         ? formatDate(item.last_checked_at)
-                        : 'Never'}
+                        : t('Never')}
                     </td>
                     <td className="px-3 py-2.5">
                       <button
@@ -185,7 +197,7 @@ function WatchlistItems() {
                             : 'border-border bg-surface-3 text-ink-3'
                         }`}
                       >
-                        {item.enabled ? 'Enabled' : 'Paused'}
+                        {item.enabled ? t('Enabled') : t('Paused')}
                       </button>
                     </td>
                     <td className="px-3 py-2.5">
@@ -216,18 +228,26 @@ function WatchlistItems() {
         ) : (
           <EmptyState
             icon={<Eye className="h-5 w-5" />}
-            title="Nothing watched yet"
-            description="Add indicators to re-check them over time and trigger alerts."
+            title={t('Nothing watched yet')}
+            description={t(
+              'Add indicators to re-check them over time and trigger alerts.',
+            )}
             className="py-14"
           />
         )}
 
         {rescanOne.isSuccess && rescanOne.data && (
           <div className="mt-4 rounded-lg border border-border bg-surface px-3 py-2.5 text-[12.5px] text-ink-2">
-            Rescanned <span className="font-mono">{rescanOne.data.value}</span> →
-            score {rescanOne.data.threat_score ?? '—'} ·{' '}
-            {rescanOne.data.alerts.length} alert
-            {rescanOne.data.alerts.length === 1 ? '' : 's'} fired
+            {t(
+              rescanOne.data.alerts.length === 1
+                ? 'Rescanned {value} → score {score} · {count} alert fired'
+                : 'Rescanned {value} → score {score} · {count} alerts fired',
+              {
+                value: rescanOne.data.value,
+                score: rescanOne.data.threat_score ?? '—',
+                count: rescanOne.data.alerts.length,
+              },
+            )}
             {rescanOne.data.analysis_id && (
               <Button
                 variant="ghost"
@@ -237,7 +257,7 @@ function WatchlistItems() {
                   navigate(`/analysis/${rescanOne.data!.analysis_id}`)
                 }
               >
-                Open analysis
+                {t('Open analysis')}
               </Button>
             )}
           </div>
@@ -248,6 +268,7 @@ function WatchlistItems() {
 }
 
 function AlertRules() {
+  const { t } = useI18n()
   const rules = useRules()
   const upsert = useUpsertRule()
   const remove = useDeleteRule()
@@ -257,12 +278,12 @@ function AlertRules() {
   const [threshold, setThreshold] = useState(70)
 
   return (
-    <Panel eyebrow="Detection logic" title="Alert rules">
+    <Panel eyebrow={t('Detection logic')} title={t('Alert rules')}>
       <div className="mb-4 grid gap-2 md:grid-cols-[1.4fr_1.4fr_auto_auto]">
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Rule name"
+          placeholder={t('Rule name')}
           className="h-10 rounded-lg border border-border bg-surface-3 px-3 text-[13px] text-ink focus:border-accent/60 focus:outline-none"
         />
         <select
@@ -272,7 +293,7 @@ function AlertRules() {
         >
           {CONDITIONS.map((option) => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {t(option.label)}
             </option>
           ))}
         </select>
@@ -294,7 +315,7 @@ function AlertRules() {
           }
         >
           <Plus className="h-4 w-4" />
-          Add rule
+          {t('Add rule')}
         </Button>
       </div>
 
@@ -302,14 +323,14 @@ function AlertRules() {
         <p className="mb-3 text-[12.5px] text-critical">
           {upsert.error instanceof Error
             ? upsert.error.message
-            : 'Could not save the rule.'}
+            : t('Could not save the rule.')}
         </p>
       )}
 
       {rules.isLoading ? (
         <div className="flex items-center justify-center gap-3 py-12 text-ink-2">
           <Spinner />
-          Loading rules…
+          {t('Loading rules…')}
         </div>
       ) : rules.data && rules.data.length > 0 ? (
         <ul className="divide-y divide-border/70">
@@ -321,7 +342,7 @@ function AlertRules() {
               <div>
                 <p className="text-[13.5px] font-medium text-ink">{rule.name}</p>
                 <p className="font-mono text-[11.5px] text-ink-3">
-                  {rule.condition} · threshold {rule.threshold}
+                  {t(rule.condition)} · {t('threshold {value}', { value: rule.threshold })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -332,7 +353,7 @@ function AlertRules() {
                       : 'border-border bg-surface-3 text-ink-3'
                   }`}
                 >
-                  {rule.enabled ? 'Enabled' : 'Disabled'}
+                  {rule.enabled ? t('Enabled') : t('Disabled')}
                 </span>
                 <Button
                   variant="ghost"
@@ -349,8 +370,10 @@ function AlertRules() {
       ) : (
         <EmptyState
           icon={<BellOff className="h-5 w-5" />}
-          title="No rules configured"
-          description="Add a rule to be alerted when watched indicators cross a threshold."
+          title={t('No rules configured')}
+          description={t(
+            'Add a rule to be alerted when watched indicators cross a threshold.',
+          )}
           className="py-12"
         />
       )}
@@ -360,6 +383,7 @@ function AlertRules() {
 
 function AlertInbox() {
   const navigate = useNavigate()
+  const { t } = useI18n()
   const alerts = useAlerts()
   const markSeen = useMarkAlertsSeen()
 
@@ -367,8 +391,8 @@ function AlertInbox() {
 
   return (
     <Panel
-      eyebrow="Notifications"
-      title="Alert inbox"
+      eyebrow={t('Notifications')}
+      title={t('Alert inbox')}
       action={
         <Button
           variant="secondary"
@@ -376,14 +400,14 @@ function AlertInbox() {
           disabled={markSeen.isPending}
           onClick={() => markSeen.mutate()}
         >
-          Mark all seen
+          {t('Mark all seen')}
         </Button>
       }
     >
       {alerts.isLoading ? (
         <div className="flex items-center justify-center gap-3 py-12 text-ink-2">
           <Spinner />
-          Loading alerts…
+          {t('Loading alerts…')}
         </div>
       ) : data && data.items.length > 0 ? (
         <ul className="divide-y divide-border/70">
@@ -412,7 +436,7 @@ function AlertInbox() {
                   size="sm"
                   onClick={() => navigate(`/analysis/${alert.analysis_id}`)}
                 >
-                  Open
+                  {t('Open')}
                 </Button>
               )}
             </li>
@@ -421,8 +445,10 @@ function AlertInbox() {
       ) : (
         <EmptyState
           icon={<Bell className="h-5 w-5" />}
-          title="No alerts yet"
-          description="When a watched indicator trips a rule, the alert lands here."
+          title={t('No alerts yet')}
+          description={t(
+            'When a watched indicator trips a rule, the alert lands here.',
+          )}
           className="py-14"
         />
       )}

@@ -1,5 +1,6 @@
 import { LEVEL_STYLE } from './level'
 import { LevelBadge } from './LevelBadge'
+import { useI18n } from '../../i18n'
 import type { ThreatLevel } from '../../types'
 
 interface ThreatGaugeProps {
@@ -12,6 +13,7 @@ const RADIUS = 52
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function ThreatGauge({ score, level }: ThreatGaugeProps) {
+  const { t } = useI18n()
   const safe = score ?? 0
   const ratio = Math.max(0, Math.min(100, safe)) / 100
   const color = level ? LEVEL_STYLE[level]?.ring ?? '#5c6675' : '#5c6675'
@@ -50,10 +52,10 @@ export function ThreatGauge({ score, level }: ThreatGaugeProps) {
         </div>
       </div>
       <div>
-        <p className="eyebrow mb-1.5">Threat score</p>
+        <p className="eyebrow mb-1.5">{t('Threat score')}</p>
         <LevelBadge level={level} />
         <p className="mt-2 max-w-[190px] text-[12.5px] leading-relaxed text-ink-2">
-          Deterministic, evidence-based verdict from the detection ratios.
+          {t('Deterministic, evidence-based verdict from the detection ratios.')}
         </p>
       </div>
     </div>

@@ -5,12 +5,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 
 import { cn } from '../../utils/cn'
+import { useI18n } from '../../i18n'
+import { LanguageToggle } from './LanguageToggle'
 
-const quickSearchSchema = z.object({
-  query: z.string().trim().min(1, 'Enter an indicator to search'),
-})
-
-type QuickSearchValues = z.infer<typeof quickSearchSchema>
+type QuickSearchValues = { query: string }
 
 interface TopBarProps {
   onMenuClick: () => void
@@ -19,6 +17,12 @@ interface TopBarProps {
 
 export function TopBar({ onMenuClick, className }: TopBarProps) {
   const navigate = useNavigate()
+  const { t } = useI18n()
+
+  const quickSearchSchema = z.object({
+    query: z.string().trim().min(1, t('Enter an indicator to search')),
+  })
+
   const { register, handleSubmit } = useForm<QuickSearchValues>({
     resolver: zodResolver(quickSearchSchema),
   })
@@ -30,15 +34,15 @@ export function TopBar({ onMenuClick, className }: TopBarProps) {
   return (
     <header
       className={cn(
-        'glass sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border px-4 md:px-6',
+        'glass sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border/80 px-4 md:px-6',
         className,
       )}
     >
       <button
         type="button"
         onClick={onMenuClick}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface-2 text-ink-2 transition-colors hover:text-ink md:hidden"
-        aria-label="Toggle navigation"
+        className="focus-ring grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface-2 text-ink-2 transition-colors hover:text-ink md:hidden"
+        aria-label={t('Toggle navigation')}
       >
         <Menu className="h-4 w-4" />
       </button>
@@ -51,20 +55,21 @@ export function TopBar({ onMenuClick, className }: TopBarProps) {
         <input
           {...register('query')}
           type="search"
-          placeholder="Search hash, URL, domain or IP…"
-          className="h-9 w-full rounded-lg border border-border bg-surface-2 pr-3 pl-9 text-[13px] text-ink placeholder:text-ink-3 focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+          placeholder={t('Search hash, URL, domain or IP…')}
+          className="focus-ring h-9 w-full rounded-lg border border-border bg-surface-2 pr-3 pl-9 text-[13px] text-ink shadow-[inset_0_1px_0_rgb(0_0_0/0.25)] placeholder:text-ink-3 focus:border-accent/50"
         />
       </form>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2.5">
+        <LanguageToggle />
         <span className="hidden font-mono text-[11px] tracking-wider text-ink-3 md:inline">
           API v1
         </span>
         <button
           type="button"
           onClick={() => navigate('/settings')}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface-2 text-ink-2 transition-colors hover:text-ink"
-          aria-label="Settings"
+          className="focus-ring grid h-9 w-9 place-items-center rounded-lg border border-border bg-surface-2 text-ink-2 transition-colors hover:text-ink"
+          aria-label={t('Settings')}
         >
           <Settings className="h-4 w-4" />
         </button>

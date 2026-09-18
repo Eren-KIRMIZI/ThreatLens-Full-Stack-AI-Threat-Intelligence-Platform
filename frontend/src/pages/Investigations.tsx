@@ -21,6 +21,7 @@ import type {
   InvestigationSeverity,
   InvestigationStatus,
 } from '../types'
+import { useI18n } from '../i18n'
 
 const STATUS_OPTIONS: { value: string; label: string }[] = [
   { value: 'all', label: 'All' },
@@ -39,6 +40,7 @@ const SEVERITY_CLASS: Record<InvestigationSeverity, string> = {
 }
 
 export function InvestigationsPage() {
+  const { t } = useI18n()
   const [status, setStatus] = useState('all')
   const [selected, setSelected] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -72,31 +74,33 @@ export function InvestigationsPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader
-        title="Investigations"
-        description="Group indicators into cases, pivot across evidence and keep analyst notes."
+<PageHeader
+        title={t('Investigations')}
+        description={t(
+          'Group indicators into cases, pivot across evidence and keep analyst notes.',
+        )}
         action={
           <Button onClick={() => setShowForm((value) => !value)}>
             <Plus className="h-4 w-4" />
-            New case
+            {t('New case')}
           </Button>
         }
       />
 
       {showForm && (
-        <Panel eyebrow="New case" title="Open an investigation">
+        <Panel eyebrow={t('New case')} title={t('Open an investigation')}>
           <div className="grid gap-3 md:grid-cols-2">
             <label className="space-y-1.5">
-              <span className="eyebrow">Title</span>
+              <span className="eyebrow">{t('Title')}</span>
               <input
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder="Operation â€¦"
-                className="h-10 w-full rounded-lg border border-border bg-surface-3 px-3 text-[13.5px] text-ink focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+                placeholder={t('Operation …')}
+                className="focus-ring h-10 w-full rounded-lg border border-border bg-surface-3 px-3 text-[13.5px] text-ink focus:border-accent/50"
               />
             </label>
             <label className="space-y-1.5">
-              <span className="eyebrow">Severity</span>
+              <span className="eyebrow">{t('Severity')}</span>
               <select
                 value={severity}
                 onChange={(event) =>
@@ -106,38 +110,48 @@ export function InvestigationsPage() {
               >
                 {SEVERITIES.map((value) => (
                   <option key={value} value={value}>
-                    {value}
+                    {t(`severity.${value}`)}
                   </option>
                 ))}
               </select>
             </label>
             <label className="space-y-1.5 md:col-span-2">
-              <span className="eyebrow">Description</span>
+              <span className="eyebrow">{t('Description')}</span>
               <textarea
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 rows={3}
-                placeholder="What are you investigating?"
-                className="w-full rounded-lg border border-border bg-surface-3 px-3 py-2 text-[13.5px] text-ink focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:outline-none"
+                placeholder={t('What are you investigating?')}
+                className="focus-ring w-full rounded-lg border border-border bg-surface-3 px-3 py-2 text-[13.5px] text-ink focus:border-accent/50"
               />
             </label>
           </div>
           <div className="mt-4 flex items-center gap-2">
             <Button onClick={submit} disabled={create.isPending || !title.trim()}>
               {create.isPending ? <Spinner /> : <Plus className="h-4 w-4" />}
-              Create case
+              {t('Create case')}
             </Button>
             <Button variant="ghost" onClick={() => setShowForm(false)}>
-              Cancel
+              {t('Cancel')}
             </Button>
           </div>
         </Panel>
       )}
 
       <div className="grid gap-4 lg:grid-cols-5">
-        <Panel eyebrow="Cases" title="Investigation queue" className="lg:col-span-3">
+        <Panel
+          eyebrow={t('Cases')}
+          title={t('Investigation queue')}
+          className="lg:col-span-3"
+        >
           <SegmentedControl
-            options={STATUS_OPTIONS}
+            options={STATUS_OPTIONS.map((option) => ({
+              ...option,
+              label:
+                option.value === 'all'
+                  ? t('All')
+                  : t(`status.${option.value}`),
+            }))}
             value={status}
             onChange={setStatus}
             className="mb-4"
@@ -146,7 +160,7 @@ export function InvestigationsPage() {
           {investigations.isLoading ? (
             <div className="flex items-center justify-center gap-3 py-16 text-ink-2">
               <Spinner className="h-5 w-5" />
-              Loading casesâ€¦
+              {t('Loading cases…')}
             </div>
           ) : data && data.items.length > 0 ? (
             <ul className="divide-y divide-border/70">
@@ -156,7 +170,7 @@ export function InvestigationsPage() {
                     type="button"
                     onClick={() => setSelected(item.id)}
                     className={`flex w-full items-center gap-3 py-3 text-left transition-colors ${
-                      selected === item.id ? 'bg-surface-2' : 'hover:bg-surface'
+                      selected === item.id ? 'bg-surface-2' : 'hover:bg-surface-2'
                     }`}
                   >
                     <span
@@ -168,10 +182,15 @@ export function InvestigationsPage() {
                       <p className="truncate text-[13.5px] font-medium text-ink">
                         {item.title}
                       </p>
-                      <p className="truncate text-[11.5px] text-ink-3">
-                        {item.status} Â· {item.items.length} indicator
-                        {item.items.length === 1 ? '' : 's'} Â·{' '}
-                        {formatDate(item.updated_at ?? item.created_at)}
+<p className="truncate text-[11.5px] text-ink-3">
+                        {t(`status.${item.status}`)} ·{' '}
+                        {t(
+                          item.items.length === 1
+                            ? '{count} indicator'
+                            : '{count} indicators',
+                          { count: item.items.length },
+                        )}{' '}
+                        · {formatDate(item.updated_at ?? item.created_at)}
                       </p>
                     </div>
                   </button>
@@ -179,10 +198,12 @@ export function InvestigationsPage() {
               ))}
             </ul>
           ) : (
-            <EmptyState
+<EmptyState
               icon={<FolderOpen className="h-5 w-5" />}
-              title="No cases yet"
-              description="Open a case to group related indicators and analyses."
+              title={t('No cases yet')}
+              description={t(
+                'Open a case to group related indicators and analyses.',
+              )}
               className="py-14"
             />
           )}
@@ -192,11 +213,13 @@ export function InvestigationsPage() {
           {selected ? (
             <CaseDetailPanel caseId={selected} onClose={() => setSelected(null)} />
           ) : (
-            <Panel eyebrow="Case file" title="Details">
+<Panel eyebrow={t('Case file')} title={t('Details')}>
               <EmptyState
                 icon={<FolderOpen className="h-5 w-5" />}
-                title="Select a case"
-                description="Pick a case to manage its indicators, status and severity."
+                title={t('Select a case')}
+                description={t(
+                  'Pick a case to manage its indicators, status and severity.',
+                )}
                 className="py-12"
               />
             </Panel>
@@ -214,7 +237,8 @@ function CaseDetailPanel({
   caseId: string
   onClose: () => void
 }) {
-  const navigate = useNavigate()
+const navigate = useNavigate()
+  const { t } = useI18n()
   const detail = useInvestigation(caseId)
   const update = useUpdateInvestigation(caseId)
   const remove = useDeleteInvestigation()
@@ -226,9 +250,9 @@ function CaseDetailPanel({
   if (detail.isLoading) {
     return (
       <Panel>
-        <div className="flex items-center justify-center gap-3 py-12 text-ink-2">
+<div className="flex items-center justify-center gap-3 py-12 text-ink-2">
           <Spinner />
-          Loading caseâ€¦
+          {t('Loading case…')}
         </div>
       </Panel>
     )
@@ -236,7 +260,7 @@ function CaseDetailPanel({
   if (!detail.data) {
     return (
       <Panel>
-        <EmptyState title="Case not found" className="py-10" />
+        <EmptyState title={t('Case not found')} className="py-10" />
       </Panel>
     )
   }
@@ -244,12 +268,12 @@ function CaseDetailPanel({
   const item = detail.data
 
   return (
-    <Panel
-      eyebrow="Case file"
+<Panel
+      eyebrow={t('Case file')}
       title={item.title}
       action={
         <Button variant="ghost" size="sm" onClick={onClose}>
-          Close
+          {t('Close')}
         </Button>
       }
     >
@@ -262,9 +286,9 @@ function CaseDetailPanel({
             }
             className="h-8 rounded-md border border-border bg-surface-3 px-2 text-[12.5px] text-ink"
           >
-            {(['open', 'active', 'closed'] as InvestigationStatus[]).map((s) => (
+{(['open', 'active', 'closed'] as InvestigationStatus[]).map((s) => (
               <option key={s} value={s}>
-                {s}
+                {t(`status.${s}`)}
               </option>
             ))}
           </select>
@@ -277,9 +301,9 @@ function CaseDetailPanel({
             }
             className="h-8 rounded-md border border-border bg-surface-3 px-2 text-[12.5px] text-ink"
           >
-            {SEVERITIES.map((s) => (
+{SEVERITIES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {t(`severity.${s}`)}
               </option>
             ))}
           </select>
@@ -291,8 +315,8 @@ function CaseDetailPanel({
               remove.mutate(caseId, { onSuccess: () => onClose() })
             }
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            Delete
+<Trash2 className="h-3.5 w-3.5" />
+            {t('Delete')}
           </Button>
         </div>
 
@@ -302,24 +326,24 @@ function CaseDetailPanel({
           </p>
         )}
 
-        <div className="space-y-2">
-          <span className="eyebrow">Add indicator</span>
+<div className="space-y-2">
+          <span className="eyebrow">{t('Add indicator')}</span>
           <div className="flex gap-2">
             <select
               value={type}
               onChange={(event) => setType(event.target.value)}
               className="h-10 rounded-lg border border-border bg-surface-3 px-2 text-[12.5px] text-ink"
             >
-              {['HASH', 'URL', 'DOMAIN', 'IP'].map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {['HASH', 'URL', 'DOMAIN', 'IP'].map((tp) => (
+                <option key={tp} value={tp}>
+                  {t(`type.${tp}`)}
                 </option>
               ))}
             </select>
             <input
               value={value}
               onChange={(event) => setValue(event.target.value)}
-              placeholder="indicatorâ€¦"
+              placeholder={t('indicator…')}
               className="h-10 min-w-0 flex-1 rounded-lg border border-border bg-surface-3 px-3 font-mono text-[12.5px] text-ink focus:border-accent/60 focus:outline-none"
             />
             <Button
@@ -337,18 +361,18 @@ function CaseDetailPanel({
           </div>
           {addItem.isError && (
             <p className="text-[12px] text-critical">
-              {addItem.error instanceof Error
+{addItem.error instanceof Error
                 ? addItem.error.message
-                : 'Could not add the indicator.'}
+                : t('Could not add the indicator.')}
             </p>
           )}
         </div>
 
-        <div>
-          <span className="eyebrow">Indicators</span>
+<div>
+          <span className="eyebrow">{t('Indicators')}</span>
           {item.items.length === 0 ? (
             <p className="mt-2 text-[12.5px] text-ink-3">
-              No indicators linked yet.
+              {t('No indicators linked yet.')}
             </p>
           ) : (
             <ul className="mt-2 space-y-2">
@@ -361,11 +385,9 @@ function CaseDetailPanel({
                     <p className="truncate font-mono text-[12px] text-ink">
                       {entry.value}
                     </p>
-                    <p className="text-[11px] text-ink-3">
-                      {entry.primary_type}
-                      {entry.analysis_id
-                        ? ` Â· ${shortId(entry.analysis_id)}`
-                        : ''}
+<p className="text-[11px] text-ink-3">
+                      {t(`type.${entry.primary_type}`)}
+                      {entry.analysis_id ? ` · ${shortId(entry.analysis_id)}` : ''}
                     </p>
                   </div>
                   {entry.analysis_id && (
@@ -374,7 +396,7 @@ function CaseDetailPanel({
                       size="sm"
                       onClick={() => navigate(`/analysis/${entry.analysis_id}`)}
                     >
-                      Open
+{t('Open')}
                     </Button>
                   )}
                 </li>
@@ -387,10 +409,10 @@ function CaseDetailPanel({
           <span
             className={`text-[12px] font-semibold uppercase ${SEVERITY_CLASS[item.severity]}`}
           >
-            {item.severity}
+{t(`severity.${item.severity}`)}
           </span>
           <span className="text-[11.5px] text-ink-3">
-            opened {formatDate(item.created_at)}
+            {t('opened {date}', { date: formatDate(item.created_at) })}
           </span>
         </div>
       </div>
