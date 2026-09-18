@@ -2,7 +2,7 @@
 
 # ThreatLens — Full-Stack AI Threat Intelligence Platform
 
-**🇬🇧 English · 🇹🇷 Türkçe**
+**🇬🇧 [English](#english) · 🇹🇷 [Türkçe](#turkce)**
 
 _Evidence-first threat intelligence analysis with a deterministic scoring
 engine, an LLM interpreter that only reasons from real VirusTotal evidence,
@@ -11,10 +11,9 @@ and one-click PDF reports._
 </div>
 
 ---
+<a id="english"></a>
 
-<details open>
-
-<summary>🇬🇧 English</summary>
+## English
 
 ## Stack
 
@@ -277,11 +276,9 @@ stored analysis:
 
 ---
 
-</details>
+<a id="turkce"></a>
 
-<details>
-
-<summary>🇹🇷 Türkçe</summary>
+## Türkçe
 
 # ThreatLens — Full-Stack Yapay Zeka Tehdit İstihbaratı Platformu
 
@@ -553,5 +550,3 @@ bir rapor derler:
   sunulabilir; üretimde API anahtarları backend'de kalır (dev proxy'si
   `vite.config.ts` içinde `/api/*` öğesini `:8000`'e iletir ve backend,
   `CORS_ORIGINS` ile CORS'u zorlar).
-
-</details>
