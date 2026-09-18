@@ -65,6 +65,7 @@ async def list_watchlist(
 async def add_watchlist(
     body: WatchlistCreate,
     repository: Annotated[WatchlistRepository, Depends(get_watchlist_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> WatchlistItemOut:
     row = await repository.add(
         value=canonical_value(body.primary_type, body.value) or body.value,
@@ -78,6 +79,7 @@ async def add_watchlist(
 async def remove_watchlist(
     watchlist_id: str,
     repository: Annotated[WatchlistRepository, Depends(get_watchlist_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> None:
     if not await repository.remove(watchlist_id):
         raise NotFoundError(
@@ -90,6 +92,7 @@ async def set_watchlist_enabled(
     watchlist_id: str,
     enabled: bool,
     repository: Annotated[WatchlistRepository, Depends(get_watchlist_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> WatchlistItemOut:
     row = await repository.set_enabled(watchlist_id, enabled)
     if row is None:
@@ -118,6 +121,7 @@ async def rescan_all(
 async def rescan_one(
     watchlist_id: str,
     rescan: Annotated[RescanService, Depends(_build_rescan)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> RescanOutcome:
     outcome = await rescan.rescan_one(watchlist_id)
     if outcome is None:
@@ -146,6 +150,7 @@ async def list_rules(
 async def upsert_rule(
     body: RuleIn,
     repository: Annotated[WatchlistRepository, Depends(get_watchlist_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> RuleOut:
     if body.condition not in SUPPORTED_CONDITIONS:
         from app.core.exceptions import AppException
@@ -201,6 +206,7 @@ async def list_alerts(
 @router.post("/alerts/mark-seen", response_model=dict)
 async def mark_alerts_seen(
     repository: Annotated[WatchlistRepository, Depends(get_watchlist_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> dict:
     await repository.mark_all_seen()
     return {"seen": True}

@@ -2,10 +2,15 @@
 
 Re-analyzes watchlist indicators (bypassing the freshness cache), appends a
 history snapshot via the analysis pipeline, then evaluates every enabled alert
-rule against the previous snapshot. Matching rules persist alert rows.
+rule against the previous snapshot. Matching rules persist *one active alert
+per (item, rule)* — sustained conditions never re-fire until the condition
+clears (re-arm).
 """
 
 from __future__ import annotations
+
+import asyncio
+import weakref
 
 from app.models.alerts import AlertRule
 from app.models.watchlist import WatchlistItem
@@ -15,6 +20,22 @@ from app.schemas.analysis import AnalysisResult
 from app.schemas.watchlist import AlertOut, RescanOutcome, RescanReport
 from app.services.alert_engine import SnapshotFacts, evaluate_rule
 from app.services.analysis_service import AnalysisService
+
+# Per-event-loop single-flight guard: prevents overlapping rescans (e.g. the
+# scheduled loop racing a manual ``/rescan/all``). Bound per loop so parallel
+# app instances / TestClient loops never fight over one lock object.
+_locks: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Lock]" = (
+    weakref.WeakKeyDictionary()
+)
+
+
+def _rescan_lock() -> asyncio.Lock:
+    loop = asyncio.get_running_loop()
+    lock = _locks.get(loop)
+    if lock is None:
+        lock = asyncio.Lock()
+        _locks[loop] = lock
+    return lock
 
 
 class RescanService:
@@ -39,6 +60,7 @@ class RescanService:
         )
 
     async def rescan_item(self, item: WatchlistItem) -> RescanOutcome:
+        result = None
         try:
             result = await self._analysis.analyze_any(
                 item.primary_type, item.value, force_refresh=True
@@ -76,9 +98,27 @@ class RescanService:
 
         rules = await self._watchlist.list_rules()
         alerts: list[AlertOut] = []
+
+        # Evaluate every rule once so firing/disarming stay consistent even when
+        # a single rule toggles off while another toggles on in the same run.
+        fired: list[tuple[AlertRule, object]] = []
+        fired_ids: set[str] = set()
         for rule in rules:
             candidate = evaluate_rule(rule, latest, previous_fact)
-            if candidate is None:
+            if candidate is not None:
+                fired.append((rule, candidate))
+                fired_ids.add(rule.id)
+
+        # Re-arm: rules that stopped firing deactivate their live alert so the
+        # next firing can raise a fresh one instead of being swallowed.
+        for rule in rules:
+            if rule.id not in fired_ids:
+                await self._watchlist.disarm_alerts(item.id, rule.id)
+
+        for rule, candidate in fired:
+            # Dedup: keep exactly one active alert per (item, rule) while the
+            # condition holds. A re-firing condition reuses the existing row.
+            if await self._watchlist.find_active_alert(item.id, candidate.rule_id):
                 continue
             created = await self._watchlist.create_alert(
                 watchlist_id=item.id,
@@ -114,12 +154,14 @@ class RescanService:
         )
 
     async def rescan_all(self) -> RescanReport:
-        items = await self._watchlist.enabled_items()
-        outcomes = [await self.rescan_item(item) for item in items]
-        return RescanReport(checked=len(outcomes), outcomes=outcomes)
+        async with _rescan_lock():
+            items = await self._watchlist.enabled_items()
+            outcomes = [await self.rescan_item(item) for item in items]
+            return RescanReport(checked=len(outcomes), outcomes=outcomes)
 
     async def rescan_one(self, watchlist_id: str) -> RescanOutcome | None:
-        item = await self._watchlist.get(watchlist_id)
-        if item is None or not item.enabled:
-            return None
-        return await self.rescan_item(item)
+        async with _rescan_lock():
+            item = await self._watchlist.get(watchlist_id)
+            if item is None or not item.enabled:
+                return None
+            return await self.rescan_item(item)

@@ -77,6 +77,26 @@ class AnalysisService:
                 indicator=result.indicator,
                 indicator_type=result.indicator_type,
             )
+            return result
+
+        # Provider health telemetry: mirror per-provider outcomes to the
+        # registry so the /iocs/health/providers dashboard reflects real usage.
+        if self._registry is not None and result.enrichment.provider_status:
+            for status in result.enrichment.provider_status:
+                try:
+                    await self._registry.record_provider_usage(
+                        provider=status.provider,
+                        indicator_type=result.indicator_type,
+                        ok=status.ok,
+                        latency_ms=status.latency_ms,
+                        error=status.error,
+                    )
+                except Exception:
+                    logger.warning(
+                        "failed to record provider telemetry",
+                        provider=status.provider,
+                        indicator=result.indicator,
+                    )
         return result
 
     async def _apply_ai(self, result: AnalysisResult) -> AnalysisResult:
@@ -122,6 +142,15 @@ class AnalysisService:
                 if result.threat_score is None:
                     # Backfill rows written before scoring existed (dev data).
                     result.threat_score, result.threat_level = score_analysis(result)
+                    try:
+                        await self._repository.update_payload(
+                            result.analysis_id, result.model_dump(mode="json")
+                        )
+                    except Exception:
+                        logger.warning(
+                            "failed to persist backfilled score",
+                            analysis_id=result.analysis_id,
+                        )
                 if result.enrichment is None:
                     # Backfill rows stored before multi-provider enrichment existed.
                     result = await self._apply_enrichment(result)
@@ -152,10 +181,22 @@ class AnalysisService:
         result = await fetch_and_build()
         result.threat_score, result.threat_level = score_analysis(result)
         result = await self._apply_enrichment(result)
-        if with_ai:
-            result = await self._apply_ai(result)
+        # Persist the durable core result *before* AI runs: an AI failure must
+        # never lose a completed enrichment pipeline.
         await self._persist(result)
         await self._record_complete(result)
+        if with_ai:
+            result = await self._apply_ai(result)
+            try:
+                await self._repository.update_payload(
+                    result.analysis_id, result.model_dump(mode="json")
+                )
+            except Exception:
+                logger.warning(
+                    "failed to attach ai to stored analysis",
+                    analysis_id=result.analysis_id,
+                    indicator=result.indicator,
+                )
         return result
 
     async def analyze_hash(
@@ -173,12 +214,16 @@ class AnalysisService:
     async def analyze_url(
         self, url: str, *, with_ai: bool = False, force_refresh: bool = False
     ) -> AnalysisResult:
+        # Canonicalize so trailing slashes/host casing/FQDN dot never split the
+        # cache key or spawn duplicate IOC registry rows for the same URL.
+        canonical_url = canonical_value("URL", url)
+
         async def fetch_and_build() -> AnalysisResult:
-            node, origin = await self._virustotal.get_or_submit_url(url)
-            return normalizer.build_url_analysis(url, node, origin)
+            node, origin = await self._virustotal.get_or_submit_url(canonical_url)
+            return normalizer.build_url_analysis(canonical_url, node, origin)
 
         return await self._cache_or(
-            url, "URL", fetch_and_build, with_ai=with_ai,
+            canonical_url, "URL", fetch_and_build, with_ai=with_ai,
             force_refresh=force_refresh,
         )
 

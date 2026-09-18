@@ -48,6 +48,40 @@ class Database:
     async def create_tables(self) -> None:
         async with self.engine.begin() as connection:
             await connection.run_sync(Base.metadata.create_all)
+            await self._sync_legacy_sqlite_schema(connection)
+
+    async def _sync_legacy_sqlite_schema(self, connection) -> None:
+        """Dev-only schema sync for databases created before the alert-dedup
+        change. ``create_all`` never alters existing tables, so a pre-existing
+        ``threatlens.db`` would lack ``alerts.active`` (and its partial unique
+        index) and every alert query would fail. Production databases are
+        expected to run real migrations, hence the SQLite guard.
+
+        The partial index is created separately (NOT NULL-safe) for old tables;
+        fresh databases already carry it from ``create_all``.
+        """
+        if connection.dialect.name != "sqlite":
+            return
+        table = await connection.exec_driver_sql(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'alerts'"
+        )
+        if not table.fetchone():
+            return
+        column = await connection.exec_driver_sql(
+            "SELECT 1 FROM pragma_table_info('alerts') WHERE name = 'active'"
+        )
+        if not column.fetchone():
+            await connection.exec_driver_sql(
+                "ALTER TABLE alerts ADD COLUMN active BOOLEAN NOT NULL DEFAULT 1"
+            )
+        index = await connection.exec_driver_sql(
+            "SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = 'uq_alerts_active_rule'"
+        )
+        if not index.fetchone():
+            await connection.exec_driver_sql(
+                "CREATE UNIQUE INDEX uq_alerts_active_rule "
+                "ON alerts (watchlist_id, rule_id) WHERE active = 1"
+            )
 
     async def dispose(self) -> None:
         await self.engine.dispose()

@@ -61,7 +61,7 @@ class AnalysisRepository:
             id=result.analysis_id,
             indicator=result.indicator,
             indicator_type=result.indicator_type,
-            meaningful_name=result.metadata.meaningful_name,
+            meaningful_name=getattr(result.metadata, "meaningful_name", None),
             malicious_count=result.stats.malicious,
             suspicious_count=result.stats.suspicious,
             threat_score=result.threat_score,
@@ -74,11 +74,24 @@ class AnalysisRepository:
         await self._session.commit()
 
     async def update_payload(self, analysis_id: str, payload: dict) -> None:
-        """Rewrite the stored payload (used to attach a later AI interpretation)."""
+        """Rewrite the stored payload, keeping summary columns in sync.
+
+        Used to attach a later AI interpretation or score backfill, so the
+        queryable threat columns (score, level, detection counts, name) always
+        match what the payload carries.
+        """
         row = await self._session.get(Analysis, analysis_id)
         if row is None:
             return
         row.payload = payload
+        row.threat_score = payload.get("threat_score")
+        row.threat_level = payload.get("threat_level")
+        stats = payload.get("stats", {}) or {}
+        row.malicious_count = stats.get("malicious") or 0
+        row.suspicious_count = stats.get("suspicious") or 0
+        row.meaningful_name = (
+            (payload.get("metadata") or {}).get("meaningful_name")
+        ) or row.meaningful_name
         await self._session.commit()
 
     async def count_for_indicator(

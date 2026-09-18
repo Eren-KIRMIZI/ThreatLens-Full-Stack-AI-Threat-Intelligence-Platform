@@ -53,6 +53,7 @@ async def list_investigations(
 async def create_investigation(
     body: InvestigationCreate,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> InvestigationOut:
     row = await repository.create(
         title=body.title,
@@ -81,6 +82,7 @@ async def update_investigation(
     investigation_id: str,
     body: InvestigationUpdate,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> InvestigationOut:
     row = await repository.update_core(
         investigation_id,
@@ -109,6 +111,7 @@ async def delete_investigation(
 async def add_item(
     investigation_id: str,
     value: str,
+    _role: Annotated[str, Depends(require_role("analyst"))],
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
     registry: Annotated[RegistryRepository, Depends(get_registry_repository)],
     primary_type: str | None = None,
@@ -136,6 +139,7 @@ async def add_note(
     analysis_id: str,
     body: NoteCreate,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> NoteOut:
     row = await repository.add_note(
         analysis_id=analysis_id, author=body.author, body=body.body
@@ -157,6 +161,7 @@ async def add_tag(
     analysis_id: str,
     body: TagCreate,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> TagCreate:
     await repository.add_tag(analysis_id=analysis_id, tag=body.tag)
     return body
@@ -175,6 +180,7 @@ async def set_pin(
     analysis_id: str,
     pinned: bool,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> dict:
     await repository.set_pinned(analysis_id, pinned)
     return {"analysis_id": analysis_id, "pinned": pinned}

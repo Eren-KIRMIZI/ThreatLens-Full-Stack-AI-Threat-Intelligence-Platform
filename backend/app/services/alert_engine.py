@@ -10,6 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.models.alerts import AlertRule
+from app.services.scoring import level_for_score
 
 SUPPORTED_CONDITIONS = ("score_ge", "engines_ge", "new_detection", "level_is")
 
@@ -66,10 +67,7 @@ def evaluate_rule(
         fired = _LEVEL_PRIORITY.get(level, 0) > _LEVEL_PRIORITY.get(prev_level, 0)
     elif rule.condition == "level_is":
         fired = _LEVEL_PRIORITY.get(level, 0) >= _LEVEL_PRIORITY.get(
-            {70: "critical", 40: "malicious", 20: "suspicious", 0: "clean"}.get(
-                rule.threshold, "malicious"
-            ),
-            0,
+            level_for_score(rule.threshold), 0
         )
     else:
         return None

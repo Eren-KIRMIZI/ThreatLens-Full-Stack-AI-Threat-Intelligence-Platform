@@ -165,6 +165,111 @@ def test_invalid_rule_condition_rejected() -> None:
     assert response.status_code == 422
 
 
+def test_rescan_does_not_duplicate_active_alert_and_rearms() -> None:
+    """Sustained conditions fire once; they re-fire only after they clear."""
+    hash_value = "c" * 64
+    install_mock()
+    assert client.post(
+        "/api/v1/analyze/hash", json={"hash": hash_value}
+    ).status_code == 201
+    item_id = client.post(
+        "/api/v1/watchlist", json={"value": hash_value, "primary_type": "HASH"}
+    ).json()["id"]
+    rule = client.post(
+        "/api/v1/watchlist/rules",
+        json={"name": "score>=50", "condition": "score_ge", "threshold": 50},
+    ).json()
+
+    def _rows_for_rule() -> list[dict]:
+        rows = client.get("/api/v1/watchlist/alerts?limit=500").json()["items"]
+        return [
+            a
+            for a in rows
+            if a["watchlist_id"] == item_id and a["rule_id"] == rule["id"]
+        ]
+
+    first = client.post(f"/api/v1/watchlist/{item_id}/rescan").json()
+    assert len([a for a in first["alerts"] if a["rule_id"] == rule["id"]]) == 1
+    assert len(_rows_for_rule()) == 1
+
+    # Rule still fires on the next rescan -> no duplicate, no new row.
+    second = client.post(f"/api/v1/watchlist/{item_id}/rescan").json()
+    assert [a for a in second["alerts"] if a["rule_id"] == rule["id"]] == []
+    assert len(_rows_for_rule()) == 1
+
+    # Raise the threshold so the rule stops firing -> live alert is disarmed.
+    raised = client.post(
+        "/api/v1/watchlist/rules",
+        json={
+            "id": rule["id"],
+            "name": "score>=400",
+            "condition": "score_ge",
+            "threshold": 400,
+        },
+    )
+    assert raised.status_code == 201
+    third = client.post(f"/api/v1/watchlist/{item_id}/rescan").json()
+    assert [a for a in third["alerts"] if a["rule_id"] == rule["id"]] == []
+
+    # Lower the threshold again -> fresh alert; history grows by one.
+    client.post(
+        "/api/v1/watchlist/rules",
+        json={
+            "id": rule["id"],
+            "name": "score>=50",
+            "condition": "score_ge",
+            "threshold": 50,
+        },
+    )
+    fourth = client.post(f"/api/v1/watchlist/{item_id}/rescan").json()
+    assert len([a for a in fourth["alerts"] if a["rule_id"] == rule["id"]]) == 1
+    assert len(_rows_for_rule()) == 2
+
+
+def test_url_canonicalization_dedupes_variants() -> None:
+    """https://Evil.COM/path/ and https://evil.com/path share one cache/registry key."""
+    from app.services.virustotal_service import VirusTotalService
+
+    reference = {"id": "url-id", "type": "url", "attributes": {
+        "url": "https://evil.com/path",
+        "reputation": -5,
+        "tags": ["phishing"],
+        "threat_names": ["Phishing"],
+        "total_votes": {"harmless": 0, "malicious": 1},
+        "first_submission_date": 1700000000,
+        "last_analysis_date": 1700000001,
+        "last_analysis_stats": {
+            "harmless": 1, "malicious": 3, "suspicious": 1,
+            "undetected": 2, "timeout": 0,
+        },
+        "last_analysis_results": {
+            "Google": {
+                "category": "malicious", "result": "Phishing", "method": "blacklist",
+            }
+        },
+    }}
+
+    calls = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls["n"] += 1
+        return httpx.Response(200, json={"data": reference})
+
+    app.state.virustotal_service = VirusTotalService(
+        api_key="test-key", transport=httpx.MockTransport(handler)
+    )
+
+    first = client.post("/api/v1/analyze/url", json={"url": "https://Evil.COM/path/"})
+    assert first.status_code == 201, first.text
+    second = client.post("/api/v1/analyze/url", json={"url": "https://evil.com/path"})
+    assert second.status_code == 201, second.text
+
+    assert first.json()["indicator"] == "https://evil.com/path"
+    assert first.json()["analysis_id"] == second.json()["analysis_id"]
+    assert calls["n"] == 1, "canonical variants must share the freshness cache"
+    assert client.get("/api/v1/iocs?search=evil.com").json()["total"] == 1
+
+
 # --- investigations / notes / tags / pin ---------------------------------------- #
 
 

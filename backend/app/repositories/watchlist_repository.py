@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.alerts import Alert, AlertRule
@@ -131,6 +132,34 @@ class WatchlistRepository:
 
     # --- alerts ---------------------------------------------------------------- #
 
+    async def find_active_alert(
+        self, watchlist_id: str, rule_id: str | None
+    ) -> Alert | None:
+        """Return the currently-active alert for a (watchlist item, rule), if any."""
+        statement = select(Alert).where(
+            Alert.watchlist_id == watchlist_id,
+            Alert.rule_id == rule_id,
+            Alert.active.is_(True),
+        )
+        return (await self._session.execute(statement)).scalar_one_or_none()
+
+    async def disarm_alerts(self, watchlist_id: str, rule_id: str) -> None:
+        """Deactivate the live alert for a (watchlist item, rule).
+
+        Called whenever the rule no longer fires, so the next firing of the
+        rule can raise a fresh alert (re-arm). Historical rows are preserved.
+        """
+        await self._session.execute(
+            update(Alert)
+            .where(
+                Alert.watchlist_id == watchlist_id,
+                Alert.rule_id == rule_id,
+                Alert.active.is_(True),
+            )
+            .values(active=False)
+        )
+        await self._session.commit()
+
     async def create_alert(
         self,
         *,
@@ -149,9 +178,19 @@ class WatchlistRepository:
             indicator=indicator,
             level=level,
             message=message,
+            active=True,
         )
         self._session.add(row)
-        await self._session.commit()
+        try:
+            await self._session.commit()
+        except IntegrityError:
+            # Concurrent rescan already created the active alert for this pair.
+            await self._session.rollback()
+            existing = await self.find_active_alert(watchlist_id, rule_id)
+            if existing is not None:
+                return existing
+            self._session.add(row)
+            await self._session.commit()
         return row
 
     async def list_alerts(

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Index, Integer, String, Text, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.database import Base
@@ -26,6 +26,18 @@ class AlertRule(Base):
 
 class Alert(Base):
     __tablename__ = "alerts"
+    __table_args__ = (
+        # At most one active alert per (watchlist item, rule). Partial index:
+        # many *historical* rows may exist for the same pair, only one is live.
+        Index(
+            "uq_alerts_active_rule",
+            "watchlist_id",
+            "rule_id",
+            unique=True,
+            sqlite_where=text("active = 1"),
+            postgresql_where=text("active"),
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     watchlist_id: Mapped[str] = mapped_column(String(36), index=True, nullable=False)
@@ -35,6 +47,7 @@ class Alert(Base):
     level: Mapped[str] = mapped_column(String(16), default="high", nullable=False)
     message: Mapped[str] = mapped_column(Text, nullable=False)
     seen: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     triggered_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, nullable=False, index=True
     )
