@@ -1,9 +1,9 @@
 """Normalized multi-provider enrichment schemas.
 
-Every threat provider (VirusTotal, AbuseIPDB, OTX, URLhaus, ThreatFox,
-MalwareBazaar, RDAP/WHOIS, GeoIP, DNS) emits a common ``NormalizedEvidence``
-object. Downstream consumers (confidence scoring, AI, reports, IOC graph)
-depend only on this normalized form, never on a provider's raw JSON.
+Every threat provider (VirusTotal, AbuseIPDB, OTX, RDAP/WHOIS, GeoIP, DNS)
+emits a common ``NormalizedEvidence`` object. Downstream consumers (confidence
+scoring, AI, reports, IOC graph) depend only on this normalized form, never on
+a provider's raw JSON.
 """
 
 from __future__ import annotations

@@ -41,9 +41,9 @@ ve tek tıkla PDF raporları._
   (varsayılan 1 saat) yukarı akışlara dokunmadan veritabanından yanıtlanır; AI
   olmadan kaydedilen analizler sonradan zenginleştirilebilir
   (`POST /analysis/{id}/ai`).
-- **Çok sağlayıcılı zenginleştirme** — VirusTotal, AbuseIPDB, URLhaus,
-  MalwareBazaar, ThreatFox, OTX ve RDAP/GeoIP/DNS'ye sağlayıcı başına zaman
-  aşımları, kanıt normalizasyonu ve açıklanabilir güven ölçütüyle paralel dağıtım.
+- **Çok sağlayıcılı zenginleştirme** — VirusTotal, AbuseIPDB, OTX ve
+  RDAP/GeoIP/DNS'ye sağlayıcı başına zaman aşımları, kanıt normalizasyonu ve
+  açıklanabilir güven ölçütüyle paralel dağıtım.
 - **IOC envanteri ve zaman çizelgeleri** — her analiz, anlık görüntü geçmişine
   sahip tekilleştirilmiş bir gösterge kayıt defterini besler; böylece bir
   sonucun zaman içinde nasıl evrildiğini görebilirsin.
@@ -71,10 +71,10 @@ ve tek tıkla PDF raporları._
 | Katman | Teknoloji |
 | --- | --- |
 | **Backend** | FastAPI (Python 3.11), SQLAlchemy (async), SQLite/Alembic, VirusTotal v3 REST istemcisi, reportlab PDF |
-| **Enrichment** | AbuseIPDB, URLhaus, MalwareBazaar, ThreatFox, OTX, RDAP, GeoIP, DNS |
-| **AI** | OpenRouter LLM (ücretsiz seviyeyle uyumlu), `evidence_refs` doğrulama |
+| **Enrichment** | AbuseIPDB, OTX, RDAP, GeoIP, DNS |
+| **AI** | OpenRouter LLM (ücretsiz model zinciri + otomatik yedekleme), `evidence_refs` doğrulama |
 | **Frontend** | React 19 + TypeScript, Vite 8, Tailwind CSS v4, TanStack Query, React Hook Form + Zod, Recharts |
-| **Kalite** | oxlint, pytest (156 test) |
+| **Kalite** | oxlint, pytest (158 test) |
 
 İnteraktif API dökümantasyonu: `http://127.0.0.1:8000/docs`
 
@@ -92,14 +92,14 @@ Frontend (Vite :5173) ──proxy──▶ API (FastAPI :8000) ──▶ VirusTo
 backend/
   app/api/v1/          FastAPI yönlendiricileri (analyze, analysis, history, reports,
                        iocs, investigations, watchlist, intel, exports)
-  app/services/        providers/ (VT, AbuseIPDB, URLhaus, MalwareBazaar, ThreatFox,
-                       OTX, RDAP, GeoIP, DNS), enrichment_service, confidence,
+  app/services/        providers/ (VT, AbuseIPDB, OTX, RDAP, GeoIP, DNS),
+                       enrichment_service, confidence,
                        graph_service, alert_engine, rescan_service, mitre, stix,
                        signatures, intel_service, report_service, ai_service
   app/repositories/    SQLAlchemy veri erişimi (analyses, registry, investigations,
                        watchlist/alerts)
   app/models|schemas/  ORM modelleri ve Pydantic şemaları
-  tests/               156 test — bellek içi DB, tüm yukarı akışlar mock
+  tests/               158 test — bellek içi DB, tüm yukarı akışlar mock
 
 frontend/
   src/pages/           Dashboard, Analyze, AnalysisDetail, History, Reports,
@@ -140,7 +140,7 @@ frontend/
 - Python 3.11+
 - Node.js 20+ (lockfile Node 22 ile üretildi)
 - Ücretsiz API anahtarları: [VirusTotal](https://www.virustotal.com/gui/my-apikey)
-  ve [OpenRouter](https://openrouter.ai/keys) (bir `:free` model çalışır — aşağıya bak)
+  ve [OpenRouter](https://openrouter.ai/keys) (ücretsiz model zinciri — aşağıya bak)
 
 ### 1) Backend
 
@@ -173,21 +173,25 @@ npm run dev            # http://localhost:5173
 
 ### 3) Ücretsiz Seviye AI (maliyetsiz)
 
-Modeli OpenRouter üzerindeki çalışan herhangi bir `:free` modele ayarlayın,
-örneğin:
+OpenRouter üzerindeki ücretsiz `:free` modeller dengesizdir ("Service
+temporarily overloaded" yaygındır). ThreatLens bu yüzden sıralı bir **model
+zinciri** kullanır: birincil model doygunlaşırsa otomatik olarak sonraki
+ücretsiz modele geçer. Varsayılan açılışı:
 
 ```bash
 OPENROUTER_MODEL=nvidia/nemotron-3-super-120b-a12b:free
+OPENROUTER_FALLBACK_MODELS=["z-ai/glm-5.2:free","google/gemma-4-26b-a4b-it:free","thinkingmachines/inkling:free","deepseek/deepseek-v4-flash-0731:free"]
 ```
 
-Backend, geçici yukarı akış hatalarını (429/5xx) üstel geri çekme ile yeniden
-dener; böylece dengesiz ücretsiz sağlayıcılar zarifçe devreye girer.
+Backend, geçici yukarı akış hatalarını (429/5xx) yeniden dener ve kibarca
+doygunlaşan her model için zincirde bir sonraki modele atlar; böylece dengesiz
+ücretsiz sağlayıcılar zarifçe devreye girer.
 
 ### 4) Testler ve lint
 
 ```bash
 cd backend
-.\.venv\Scripts\python -m pytest -q                 # 156 test, yukarı akışlar mock
+.\.venv\Scripts\python -m pytest -q                 # 158 test, yukarı akışlar mock
 
 cd frontend
 npm run lint                                         # oxlint
@@ -200,7 +204,8 @@ npm run build                                        # tsc -b && vite build
 | --- | --- | --- |
 | `VIRUSTOTAL_API_KEY` | — | VirusTotal v3 API anahtarı (analiz için zorunlu) |
 | `OPENROUTER_API_KEY` | — | OpenRouter anahtarı (AI yorumu için zorunlu) |
-| `OPENROUTER_MODEL` | `openrouter/auto` | örn. `nvidia/nemotron-3-super-120b-a12b:free` |
+| `OPENROUTER_MODEL` | `openrouter/auto` | birincil model, örn. `nvidia/nemotron-3-super-120b-a12b:free` |
+| `OPENROUTER_FALLBACK_MODELS` | `[]` | sıralı yedek model zinciri (JSON dizi veya virgülle ayrılmış) |
 | `AI_ASSIST_DEFAULT` | `false` | her analizde AI yorumunu çalıştır |
 | `DATABASE_URL` | `sqlite+aiosqlite:///./threatlens.db` | SQLite (dev) veya `postgresql+asyncpg://…` |
 | `CACHE_TTL_SECONDS` | `3600` | tekrar analizler için tazelik/önbellek penceresi |

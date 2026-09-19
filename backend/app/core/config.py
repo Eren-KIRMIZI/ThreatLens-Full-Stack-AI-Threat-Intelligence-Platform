@@ -1,9 +1,10 @@
 """Application configuration loaded from environment / .env file."""
 
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -33,12 +34,12 @@ class Settings(BaseSettings):
     virustotal_api_key: str | None = None
     openrouter_api_key: str | None = None
     openrouter_model: str = "openrouter/auto"
+    # Ordered fallback chain tried when the primary free model is overloaded.
+    openrouter_fallback_models: Annotated[list[str], NoDecode] = []
 
     # Optional enrichment providers
     abuseipdb_api_key: str | None = None
     otx_api_key: str | None = None
-    threatfox_api_key: str | None = None
-    malwarebazaar_api_key: str | None = None
 
     # Enrichment
     enrichment_timeout_seconds: float = 45.0
@@ -64,6 +65,21 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+    @field_validator("openrouter_fallback_models", mode="before")
+    @classmethod
+    def _coerce_model_list(cls, value: object) -> object:
+        """Accept both a JSON array (`["a","b"]`) and comma-separated text."""
+        if value is None:
+            return []
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped or stripped.lower() in {"none", "null", "[]"}:
+                return []
+            if stripped.startswith("[") and stripped.endswith("]"):
+                stripped = stripped[1:-1]
+            return [item.strip() for item in stripped.split(",") if item.strip()]
+        return value
 
     @property
     def is_production(self) -> bool:

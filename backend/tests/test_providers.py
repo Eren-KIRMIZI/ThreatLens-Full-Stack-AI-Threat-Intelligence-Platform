@@ -1,17 +1,12 @@
 """Provider HTTP-level tests using httpx MockTransport (no network)."""
 
-import json
-
 import httpx
 
 from app.services.providers.abuseipdb import AbuseIPDBProvider
 from app.services.providers.dns import DNSProvider
 from app.services.providers.geoip import GeoIPProvider
-from app.services.providers.malwarebazaar import MalwareBazaarProvider
 from app.services.providers.otx import OTXProvider
 from app.services.providers.rdap import RDAPProvider
-from app.services.providers.threatfox import ThreatFoxProvider
-from app.services.providers.urlhaus import URLhausProvider
 
 
 def _run(provider, indicator_type: str, indicator: str, handler):
@@ -63,58 +58,6 @@ def test_abuseipdb_clean_returns_no_evidence() -> None:
     assert _run(provider, "IP", "1.2.3.4", handler) == []
 
 
-def test_urlhaus_domain_lookup() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        assert request.url.path.endswith("/host/")
-        return httpx.Response(
-            200,
-            json={
-                "query_status": "ok",
-                "url_count": 5,
-                "payload_count": 2,
-                "firstseen": "2025-01-01 00:00:00",
-                "lastseen": "2025-06-01 00:00:00",
-            },
-        )
-
-    provider = URLhausProvider()
-    items = _run(provider, "DOMAIN", "evil.com", handler)
-    assert items and items[0].verdict == "malicious"
-    assert items[0].metadata["url_count"] == 5
-
-
-def test_urlhaus_unlisted_returns_no_evidence() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json={"query_status": "no_results"})
-
-    provider = URLhausProvider()
-    assert _run(provider, "DOMAIN", "good.com", handler) == []
-
-
-def test_malwarebazaar_hash_info() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(
-            200,
-            json={
-                "query_status": "ok",
-                "data": [
-                    {
-                        "signature": "Emotet",
-                        "file_type": "exe",
-                        "mime_type": "application/x-dosexec",
-                        "first_seen": "2025-02-01 10:00:00",
-                        "tags": ["emotet"],
-                    }
-                ],
-            },
-        )
-
-    provider = MalwareBazaarProvider(api_key="test")
-    items = _run(provider, "HASH", "a" * 64, handler)
-    assert items and items[0].verdict == "malicious"
-    assert "Emotet" in items[0].value
-
-
 def test_otx_pulse_membership() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.url.path.endswith("/indicators/file/ab/pulse_info")
@@ -143,32 +86,8 @@ def test_otx_pulse_membership() -> None:
 
 
 def test_otx_not_configured_is_skipped() -> None:
-    field = OTXProvider(api_key=None)
+    field = OTXProvider(api_key="")
     assert field.configured is False
-
-
-def test_threatfox_ioc_search() -> None:
-    def handler(request: httpx.Request) -> httpx.Response:
-        body = json.loads(request.content)
-        assert body["authkey"] == "secret"
-        return httpx.Response(
-            200,
-            json={
-                "query_status": "ok",
-                "data": [
-                    {
-                        "malware": "EMOTET",
-                        "malware_printable": "Emotet",
-                        "threat_type": "botnet_cc",
-                        "first_seen": "2025-03-01 00:00:00",
-                    }
-                ],
-            },
-        )
-
-    provider = ThreatFoxProvider(api_key="secret")
-    items = _run(provider, "IP", "2.3.4.5", handler)
-    assert items and items[0].verdict == "malicious"
 
 
 def test_rdap_domain_registration() -> None:

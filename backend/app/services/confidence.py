@@ -21,9 +21,6 @@ from app.services.scoring import level_for_score
 PROVIDER_WEIGHTS: dict[str, float] = {
     "virustotal": 1.0,
     "abuseipdb": 0.55,
-    "urlhaus": 0.6,
-    "threatfox": 0.6,
-    "malwarebazaar": 0.5,
     "otx": 0.4,
     "rdap": 0.3,
     "geoip": 0.1,

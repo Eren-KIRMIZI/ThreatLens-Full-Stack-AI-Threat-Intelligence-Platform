@@ -79,3 +79,50 @@ async def test_non_json_content_raises_invalid_response() -> None:
     with pytest.raises(AppException) as exc:
         await service.chat_json(system="s", user="u")
     assert exc.value.code == "openrouter_invalid_response"
+
+
+async def test_model_chain_rotates_to_next_model_on_overload() -> None:
+    """Free-tier overload ("Service temporarily overloaded") rotates models."""
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        calls.append(body["model"])
+        if body["model"] == "primary/free":
+            return httpx.Response(
+                200,
+                json={"message": "Upstream error from Nvidia: Service temporarily overloaded", "code": 503},
+            )
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"summary": "ok"}'}}]})
+
+    service = OpenRouterService(
+        api_key="k",
+        model="primary/free",
+        fallback_models=["secondary/free"],
+        transport=httpx.MockTransport(handler),
+    )
+    result = await service.chat_json(system="s", user="u")
+    assert result == {"summary": "ok"}
+    assert calls == ["primary/free", "secondary/free"]
+    assert service.model == "primary/free"
+
+
+async def test_rate_limited_primary_falls_back_and_succeeds() -> None:
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        seen.append(body["model"])
+        if body["model"] == "primary/free":
+            return httpx.Response(429, json={})
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"ok": true}'}}]})
+
+    service = OpenRouterService(
+        api_key="k",
+        model="primary/free",
+        fallback_models=["secondary/free"],
+        transport=httpx.MockTransport(handler),
+    )
+    result = await service.chat_json(system="s", user="u")
+    assert result == {"ok": True}
+    assert seen == ["primary/free", "secondary/free"]
