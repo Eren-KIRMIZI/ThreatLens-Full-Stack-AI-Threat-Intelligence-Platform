@@ -6,8 +6,10 @@ import { Analyze } from './pages/Analyze'
 import { Dashboard } from './pages/Dashboard'
 import { GraphPage } from './pages/Graph'
 import { HistoryPage } from './pages/History'
+import { Hunt } from './pages/Hunt'
 import { InvestigationsPage } from './pages/Investigations'
 import { IOCsPage } from './pages/IOCs'
+import { MitreMatrix } from './pages/MitreMatrix'
 import { Reports } from './pages/Reports'
 import { Settings } from './pages/Settings'
 import { WatchlistPage } from './pages/Watchlist'
@@ -21,6 +23,8 @@ const router = createBrowserRouter([
       { path: 'analyze', element: <Analyze /> },
       { path: 'analysis/:analysisId', element: <AnalysisDetail /> },
       { path: 'analysis/:analysisId/graph', element: <GraphPage /> },
+      { path: 'hunt', element: <Hunt /> },
+      { path: 'mitre', element: <MitreMatrix /> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'iocs', element: <IOCsPage /> },
       { path: 'investigations', element: <InvestigationsPage /> },

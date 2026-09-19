@@ -447,3 +447,28 @@ export interface Digest {
   generated_at: string
   sections: DigestSection[]
 }
+
+// --- MITRE ATT&CK ------------------------------------------------------------ //
+
+export interface MitreTechnique {
+  id: string
+  name: string
+  tactic: string
+}
+
+export interface MitreCatalog {
+  tactics: Record<string, string>
+  techniques: MitreTechnique[]
+}
+
+export interface MitreMappedTechnique {
+  id: string
+  name: string | null
+  tactic: string
+  source: 'evidence' | 'ai'
+}
+
+export interface MitreAnalysisMapping {
+  indicator: string
+  mapped: MitreMappedTechnique[]
+}

@@ -14,6 +14,8 @@ import {
   fetchIOCs,
   fetchInvestigation,
   fetchInvestigations,
+  fetchMitreAnalysis,
+  fetchMitreCatalog,
   fetchNotes,
   fetchPinned,
   fetchProviderHealth,
@@ -74,6 +76,24 @@ export function useGlobalSearch(query: string) {
     queryFn: () => globalSearch(query),
     enabled: query.trim().length >= 2,
     placeholderData: keepPreviousData,
+  })
+}
+
+// --- MITRE ATT&CK ------------------------------------------------------------ //
+
+export function useMitreCatalog() {
+  return useQuery({
+    queryKey: ['mitre-catalog'],
+    queryFn: fetchMitreCatalog,
+    staleTime: 10 * 60_000,
+  })
+}
+
+export function useMitreAnalysis(analysisId: string | undefined) {
+  return useQuery({
+    queryKey: ['mitre-analysis', analysisId],
+    queryFn: () => fetchMitreAnalysis(analysisId!),
+    enabled: Boolean(analysisId),
   })
 }
 

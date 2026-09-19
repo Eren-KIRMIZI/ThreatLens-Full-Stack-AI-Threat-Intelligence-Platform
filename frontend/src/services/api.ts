@@ -14,6 +14,8 @@ import type {
   IndicatorType,
   Investigation,
   InvestigationPage,
+  MitreAnalysisMapping,
+  MitreCatalog,
   Note,
   ProviderHealthReport,
   ReportDocument,
@@ -195,6 +197,18 @@ export async function fetchDigest(window = 'week'): Promise<Digest> {
 
 export async function globalSearch(query: string): Promise<SearchResponse> {
   return request<SearchResponse>(withQuery('/intel/search', { q: query }))
+}
+
+// --- MITRE ATT&CK ------------------------------------------------------------ //
+
+export async function fetchMitreCatalog(): Promise<MitreCatalog> {
+  return request<MitreCatalog>('/intel/mitre/catalog')
+}
+
+export async function fetchMitreAnalysis(
+  analysisId: string,
+): Promise<MitreAnalysisMapping> {
+  return request<MitreAnalysisMapping>(`/intel/mitre/analysis/${analysisId}`)
 }
 
 // --- Investigations ----------------------------------------------------------- //

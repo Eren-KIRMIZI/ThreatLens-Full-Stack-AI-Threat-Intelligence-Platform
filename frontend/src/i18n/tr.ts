@@ -495,4 +495,118 @@ export const tr: Record<string, string> = {
   'Value': 'Değer',
   'Confidence score': 'Güven puanı',
   'Reason': 'Gerekçe',
+
+  // --- SOC Dashboard --------------------------------------------------------- //
+  'Security Operations Center': 'Güvenlik Operasyon Merkezi',
+  'Live threat posture across analyses, IOCs, watchlist alerts and provider health.':
+    'Analizler, IOC’ler, izleme listesi uyarıları ve sağlayıcı sağlığı genelinde canlı tehdit durumu.',
+  'Flagged findings': 'İşaretli bulgular',
+  'Malicious or critical verdicts in the latest set':
+    'En güncel kümedeki kötü amaçlı veya kritik kararlar',
+  'Active IOCs': 'Aktif IOC’ler',
+  'Distinct indicators tracked': 'Takip edilen benzersiz göstergeler',
+  'Unseen alerts': 'Okunmamış uyarılar',
+  'Watchlist rules that need attention': 'İlgilenilmesi gereken izleme listesi kural uyarıları',
+  'Live intelligence': 'Canlı istihbarat',
+  'Activity feed': 'Etkinlik akışı',
+  Live: 'Canlı',
+  'Recent analyses and watchlist alerts will stream in here.':
+    'Son analizler ve izleme listesi uyarıları buraya akacak.',
+  'detected by {count} engines': '{count} motor tarafından tespit edildi',
+  'suspicious across {count} of {total} engines':
+    '{total} motorun {count} tanesi şüpheli buldu',
+  'clean across {count} engines': '{count} motor tarafından temiz bulundu',
+  Online: 'Çevrimiçi',
+  Offline: 'Çevrimdışı',
+  'Threat level distribution': 'Tehdit seviyesi dağılımı',
+  'Analyst toolkit': 'Analist araç seti',
+  'Jump to a workflow': 'Bir iş akışına geç',
+  'Threat Hunting': 'Tehdit Avcılığı',
+  'Search indicators across analyses and IOCs with type filters.':
+    'Analizler ve IOC’ler genelinde tip filtreleriyle gösterge arayın.',
+  'Map stored evidence to techniques and inspect coverage.':
+    'Saklanan kanıtları tekniklere eşleyin ve kapsamı inceleyin.',
+  'Automated rescan rules and the alert queue.':
+    'Otomatik yeniden tarama kuralları ve uyarı kuyruğu.',
+  'Every score is computed from detection ratios, reputation and community verdicts — then interpreted by a free, evidence-locked AI model.':
+    'Her puan tespit oranlarından, ünden ve topluluk kararlarından hesaplanır — ardından ücretsiz, kanıta kilitli bir AI modeliyle yorumlanır.',
+
+  // --- Threat Hunting -------------------------------------------------------- //
+  'Search analyses and the IOC registry, then pivot into verdicts, graphs and reports.':
+    'Analizleri ve IOC kaydını arayın, ardından kararlara, grafiklere ve raporlara geçin.',
+  'Hash, domain, IP, URL or file name…': 'Hash, alan adı, IP, URL veya dosya adı…',
+  'Clear search': 'Aramayı temizle',
+  'All types': 'Tüm tipler',
+  'Start a hunt': 'Avı başlat',
+  'Type at least two characters. Every match links straight to its analysis or IOC profile.':
+    'En az iki karakter yazın. Her eşleşme doğrudan analizine veya IOC profiline bağlanır.',
+  'Hunting…': 'Avlanıyor…',
+  'No matches': 'Eşleşme yok',
+  'Nothing matched the query and active filters.':
+    'Sorgu ve aktif filtrelerle hiçbir şey eşleşmedi.',
+  '{count} results for “{query}”': '“{query}” için {count} sonuç',
+  'IOC registry': 'IOC kaydı',
+  analyses: 'analiz',
+  'IOC': 'IOC',
+
+  // --- MITRE ATT&CK ---------------------------------------------------------- //
+  'Every stored analysis is mapped to tactics and techniques from its normalized evidence — corroborated with AI-disclosed techniques.':
+    'Saklanan her analiz, normalize edilmiş kanıtlarından taktik ve tekniklere eşlenir — AI’nın açıkladığı tekniklerle doğrulanır.',
+  'Analysis to inspect': 'İncelenecek analiz',
+  'Mapping target': 'Eşleme hedefi',
+  Techniques: 'Teknikler',
+  'AI corroborated': 'AI doğrulamalı',
+  'Loading catalog…': 'Katalog yükleniyor…',
+  'Coverage heatmap': 'Kapsam ısı haritası',
+  'Tactic matrix': 'Taktik matrisi',
+  'Mapping techniques…': 'Teknikler eşleniyor…',
+  technique: 'teknik',
+  techniques: 'teknik',
+  'Observed techniques': 'Gözlemlenen teknikler',
+  evidence: 'kanıt',
+  ai: 'AI',
+  'Nothing mapped yet': 'Henüz eşlenen yok',
+  'This analysis produced no ATT&CK-correlating evidence. Run an enrichment or ask the AI to reinterpret it.':
+    'Bu analiz, ATT&CK ile ilişkilendirilebilir kanıt üretmedi. Bir zenginleştirme çalıştırın veya AI’dan yeniden yorumlamasını isteyin.',
+  'Unmapped technique': 'Eşlenmemiş teknik',
+  'No analyses to map': 'Eşlenecek analiz yok',
+  'No analyses yet': 'Henüz analiz yok',
+  'Catalog could not be loaded': 'Katalog yüklenemedi',
+  'Run an analysis first — the matrix will light up with its ATT&CK techniques.':
+    'Önce bir analiz çalıştırın — matris, ATT&CK teknikleriyle aydınlanacak.',
+  Reconnaissance: 'Keşif',
+  'Resource Development': 'Kaynak Geliştirme',
+  'Initial Access': 'İlk Erişim',
+  Execution: 'Yürütme',
+  Persistence: 'Kalıcılık',
+  'Privilege Escalation': 'Ayrıcalık Yükseltme',
+  'Defense Evasion': 'Savunma Atlatma',
+  'Credential Access': 'Kimlik Bilgisi Erişimi',
+  Discovery: 'Keşif',
+  'Lateral Movement': 'Yanal Hareket',
+  Collection: 'Toplama',
+  'Command and Control': 'Komuta ve Kontrol',
+  Exfiltration: 'Veri Sızdırma',
+  Impact: 'Etki',
+
+  // --- Analysis detail / result ---------------------------------------------- //
+  'ATT&CK mapping': 'ATT&CK eşlemesi',
+  'MITRE ATT&CK techniques': 'MITRE ATT&CK teknikleri',
+  'Open matrix': 'Matrisi aç',
+  'No ATT&CK-correlating evidence in this analysis yet. The matrix view unlocks it the moment enrichment or AI mapping finds a technique.':
+    'Bu analizde henüz ATT&CK ile ilişkilendirilebilir kanıt yok. Zenginleştirme veya AI eşlemesi bir teknik bulduğu anda matris görünümü açılır.',
+  'AI': 'AI',
+  '{count} engines flag this {type}': '{count} motor bu {type} için işaret verdi',
+  engines: 'motor',
+  '{pct}% of engines returned a malicious verdict.':
+    'Motorların %{pct}’ü kötü amaçlı karar verdi.',
+  'No engine flagged this indicator — consensus leans harmless.':
+    'Hiçbir motor bu göstergeyi işaretlemedi — fikir birliği zararsız yönünde.',
+  'Selected entity': 'Seçili varlık',
+  'Node details': 'Düğüm ayrıntıları',
+  'No selection': 'Seçim yok',
+  'Click any node to inspect its relationship, verdict and raw evidence metadata.':
+    'İlişkisini, kararını ve ham kanıt meta verisini incelemek için herhangi bir düğüme tıklayın.',
+  'click a node for details': 'detaylar için bir düğüme tıklayın',
+  'node id': 'düğüm kimliği',
 }

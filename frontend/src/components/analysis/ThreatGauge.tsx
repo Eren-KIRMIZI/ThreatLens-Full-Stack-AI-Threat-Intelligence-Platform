@@ -1,5 +1,6 @@
 import { LEVEL_STYLE } from './level'
 import { LevelBadge } from './LevelBadge'
+import { useCountUp } from '../../hooks/useCountUp'
 import { useI18n } from '../../i18n'
 import type { ThreatLevel } from '../../types'
 
@@ -14,10 +15,11 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export function ThreatGauge({ score, level }: ThreatGaugeProps) {
   const { t } = useI18n()
-  const safe = score ?? 0
-  const ratio = Math.max(0, Math.min(100, safe)) / 100
+  const safe = Math.max(0, Math.min(100, score ?? 0))
+  const ratio = safe / 100
   const color = level ? LEVEL_STYLE[level]?.ring ?? '#5c6675' : '#5c6675'
   const offset = CIRCUMFERENCE * (1 - ratio)
+  const display = useCountUp(safe)
 
   return (
     <div className="flex items-center gap-5">
@@ -41,12 +43,12 @@ export function ThreatGauge({ score, level }: ThreatGaugeProps) {
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={offset}
-            style={{ transition: 'stroke-dashoffset 700ms ease' }}
+            style={{ transition: 'stroke-dashoffset 900ms ease' }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-3xl font-semibold tracking-tight text-ink tabular-nums">
-            {score ?? '—'}
+            {score == null ? '—' : display}
           </span>
           <span className="eyebrow mt-0.5">/ 100</span>
         </div>

@@ -2,6 +2,13 @@
 
 # ThreatLens — Full-Stack Yapay Zeka Tehdit İstihbaratı Platformu
 
+Amacı:
+
+"Bir dosya, IP adresi, domain veya hash güvenli mi? Zararlıysa neyle ilişkili, ne kadar tehlikeli, 
+nasıl davranıyor ve güvenlik ekibi ne yapmalı?" sorularına cevap vermek.
+
+Bir antivirüs gibi zararlı yazılımı engelleyen bir ürün değil. Daha çok güvenlik analistinin araştırma aracıdır.
+
 _Kanıta dayalı tehdit istihbaratı analizi: deterministik puanlama motoru,
 yalnızca gerçek VirusTotal kanıtlarından akıl yürüten bir LLM yorumlayıcısı
 ve tek tıkla PDF raporları._

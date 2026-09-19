@@ -2,8 +2,11 @@ import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   ArrowLeft,
+  ArrowRight,
+  Crosshair,
   Download,
   FileCode2,
+  LayoutGrid,
   Network,
   Pin,
   RefreshCw,
@@ -32,6 +35,7 @@ import { useAnalysis } from '../hooks/useAnalyses'
 import {
   useAddNote,
   useAddTag,
+  useMitreAnalysis,
   useNotes,
   usePinned,
   useSetPinned,
@@ -46,6 +50,7 @@ export function AnalysisDetail() {
   const { t } = useI18n()
 
   const analysis = useAnalysis(analysisId)
+  const mitre = useMitreAnalysis(analysisId)
   const pinned = usePinned()
   const setPinned = useSetPinned(analysisId)
   const tags = useTags(analysisId)
@@ -142,6 +147,64 @@ export function AnalysisDetail() {
         analysis.data && (
           <>
             <AnalysisResultView result={analysis.data} />
+
+            <Panel
+              eyebrow={t('ATT&CK mapping')}
+              title={t('MITRE ATT&CK techniques')}
+              action={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/mitre?analysis=${analysisId}`)}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  {t('Open matrix')}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
+              }
+            >
+              {mitre.isLoading ? (
+                <div className="flex items-center gap-3 py-6 text-ink-2">
+                  <Spinner />
+                  {t('Mapping techniques…')}
+                </div>
+              ) : (mitre.data?.mapped ?? []).length === 0 ? (
+                <div className="flex items-center gap-3 rounded-lg border border-dashed border-border-strong bg-surface px-4 py-6">
+                  <Crosshair className="h-5 w-5 shrink-0 text-ink-3" />
+                  <p className="text-[13px] leading-relaxed text-ink-2">
+                    {t(
+                      'No ATT&CK-correlating evidence in this analysis yet. The matrix view unlocks it the moment enrichment or AI mapping finds a technique.',
+                    )}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {(mitre.data?.mapped ?? []).map((item) => (
+                    <span
+                      key={`${item.source}-${item.id}`}
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border-strong bg-surface-3 px-2 py-1"
+                      title={item.tactic}
+                    >
+                      <span
+                        className={
+                          item.source === 'ai'
+                            ? 'font-mono text-[11px] text-violet-300'
+                            : 'font-mono text-[11px] text-accent-strong'
+                        }
+                      >
+                        {item.id}
+                      </span>
+                      <span className="max-w-[180px] truncate text-[11.5px] text-ink-2">
+                        {item.name}
+                      </span>
+                      {item.source === 'ai' && (
+                        <Sparkles className="h-3 w-3 text-violet-300" aria-label={t('AI')} />
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Panel>
 
             <div className="grid gap-4 lg:grid-cols-2">
               <Panel eyebrow={t('Exports')} title={t('Take the intelligence with you')}>

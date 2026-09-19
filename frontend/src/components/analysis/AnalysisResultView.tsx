@@ -13,8 +13,10 @@ import { AiAnalysisView } from './AiAnalysisView'
 import { MetadataView } from './MetadataView'
 import { ThreatGauge } from './ThreatGauge'
 import { LevelBadge } from './LevelBadge'
-import { formatDate, shortId } from './level'
+import { formatDate, shortId, statsTotal } from './level'
+import { useCountUp } from '../../hooks/useCountUp'
 import { useI18n } from '../../i18n'
+import { cn } from '../../utils/cn'
 import type { AnalysisResult } from '../../types'
 
 function HeaderLine({ result }: { result: AnalysisResult }) {
@@ -74,6 +76,11 @@ interface AnalysisResultViewProps {
 
 export function AnalysisResultView({ result }: AnalysisResultViewProps) {
   const { t } = useI18n()
+  const malicious = useCountUp(result.stats.malicious)
+  const total = statsTotal(result.stats)
+  const ratio = total > 0 ? (result.stats.malicious / total) * 100 : 0
+  const flagged = result.stats.malicious > 0
+
   return (
     <div className="space-y-4">
       <Panel eyebrow={t('Result')} className="relative overflow-hidden">
@@ -81,8 +88,36 @@ export function AnalysisResultView({ result }: AnalysisResultViewProps) {
         <div className="mt-5 grid gap-6 border-t border-border/60 pt-5 lg:grid-cols-[auto_1fr]">
           <ThreatGauge score={result.threat_score} level={result.threat_level} />
           <div className="min-w-0">
-            <p className="eyebrow mb-2.5">{t('Detection distribution')}</p>
+            <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+              <span
+                className={cn(
+                  'text-[34px] leading-none font-semibold tracking-tight tabular-nums',
+                  flagged ? 'text-critical' : 'text-ink',
+                )}
+              >
+                {malicious}
+              </span>
+              <span className="font-mono text-[13px] text-ink-3">
+                / {total} {t('engines')}
+              </span>
+              {flagged && <LevelBadge level={result.threat_level} />}
+            </div>
+            <p className="eyebrow mt-1.5 mb-2.5">
+              {t('{count} engines flag this {type}', {
+                count: result.stats.malicious,
+                type: t(`type.${result.indicator_type}`),
+              })}
+            </p>
             <DetectionBar stats={result.stats} />
+            <p className="mt-2 text-[12px] leading-relaxed text-ink-3">
+              {flagged
+                ? t('{pct}% of engines returned a malicious verdict.', {
+                    pct: Math.round(ratio),
+                  })
+                : t(
+                    'No engine flagged this indicator — consensus leans harmless.',
+                  )}
+            </p>
           </div>
         </div>
       </Panel>

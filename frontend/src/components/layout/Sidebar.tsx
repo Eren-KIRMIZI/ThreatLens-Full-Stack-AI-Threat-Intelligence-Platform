@@ -1,10 +1,12 @@
 import {
   BellRing,
   Boxes,
+  Crosshair,
   FileText,
   FolderOpen,
   History,
   LayoutDashboard,
+  LayoutGrid,
   Radar,
   Settings2,
 } from 'lucide-react'
@@ -14,13 +16,18 @@ import { cn } from '../../utils/cn'
 import { Logo } from './Logo'
 import { useI18n } from '../../i18n'
 
-const NAV_ITEMS = [
+const COMMAND_ITEMS = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/analyze', label: 'Analyze', icon: Radar },
+  { to: '/hunt', label: 'Threat Hunting', icon: Crosshair },
   { to: '/history', label: 'History', icon: History },
   { to: '/iocs', label: 'IOC Inventory', icon: Boxes },
   { to: '/investigations', label: 'Investigations', icon: FolderOpen },
+]
+
+const SYSTEM_ITEMS = [
   { to: '/watchlist', label: 'Watchlist', icon: BellRing },
+  { to: '/mitre', label: 'MITRE ATT&CK', icon: LayoutGrid },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/settings', label: 'Settings', icon: Settings2 },
 ]
@@ -44,11 +51,11 @@ export function Sidebar({ className }: SidebarProps) {
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto p-3">
         <p className="eyebrow px-3 pt-2 pb-1.5">{t('Command')}</p>
-        {NAV_ITEMS.slice(0, 6).map((item) => (
+        {COMMAND_ITEMS.map((item) => (
           <SidebarLink key={item.to} item={item} p={t} />
         ))}
         <p className="eyebrow px-3 pt-4 pb-1.5">{t('System')}</p>
-        {NAV_ITEMS.slice(6).map((item) => (
+        {SYSTEM_ITEMS.map((item) => (
           <SidebarLink key={item.to} item={item} p={t} />
         ))}
       </nav>
@@ -72,7 +79,7 @@ function SidebarLink({
   item,
   p,
 }: {
-  item: (typeof NAV_ITEMS)[number]
+  item: (typeof COMMAND_ITEMS)[number]
   p: (key: string) => string
 }) {
   return (
