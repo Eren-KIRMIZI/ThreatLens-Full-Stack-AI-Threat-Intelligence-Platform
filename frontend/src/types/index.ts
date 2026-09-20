@@ -356,6 +356,35 @@ export interface Note {
   created_at: string | null
 }
 
+// --- Investigation workspace (notes / campaigns / evidence) ------------------ //
+
+export interface InvestigationNote {
+  id: string
+  investigation_id: string
+  author: string
+  body: string
+  created_at: string | null
+}
+
+export interface CampaignEvidence {
+  id: string
+  campaign_id: string
+  analysis_id: string | null
+  value: string
+  primary_type: string
+  note: string | null
+  created_at: string | null
+}
+
+export interface Campaign {
+  id: string
+  investigation_id: string
+  name: string
+  color: string
+  created_at: string | null
+  evidence: CampaignEvidence[]
+}
+
 // --- Watchlist & alerts ------------------------------------------------------- //
 
 export interface WatchlistItem {

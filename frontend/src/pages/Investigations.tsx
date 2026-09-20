@@ -272,9 +272,17 @@ const navigate = useNavigate()
       eyebrow={t('Case file')}
       title={item.title}
       action={
-        <Button variant="ghost" size="sm" onClick={onClose}>
-          {t('Close')}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => navigate(`/investigations/${item.id}/workspace`)}
+          >
+            {t('Workspace')}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            {t('Close')}
+          </Button>
+        </div>
       }
     >
       <div className="space-y-4">

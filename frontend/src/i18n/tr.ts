@@ -720,4 +720,36 @@ export const tr: Record<string, string> = {
   'Add it to the watchlist so changes are caught automatically.':
     'Değişikliklerin otomatik yakalanması için onu izleme listesine ekleyin.',
   'View relationship graph': 'İlişki grafiğini görüntüle',
+
+  // --- Investigation workspace ---------------------------------------------- //
+  'Investigation workspace': 'Soruşturma çalışma alanı',
+  'Back to investigations': 'Soruşturmalara dön',
+  'Add a description…': 'Açıklama ekle…',
+  'Campaign board': 'Kampanya panosu',
+  'New campaign': 'Yeni kampanya',
+  'Campaign name…': 'Kampanya adı…',
+  'Create': 'Oluştur',
+  'No campaigns yet': 'Henüz kampanya yok',
+  'Group evidence into named campaigns to build the operation picture.':
+    'Operasyon resmini oluşturmak için kanıtları adlandırılmış kampanyalar halinde gruplayın.',
+  'All evidence': 'Tüm kanıtlar',
+  'Pick a campaign to inspect its timeline, ATT&CK coverage and evidence.':
+    'Zaman çizelgesini, ATT&CK kapsamını ve kanıtlarını incelemek için bir kampanya seçin.',
+  'Evidence register': 'Kanıt sicili',
+  'Case indicators': 'Vaka göstergeleri',
+  'Add indicators from the case file page.':
+    'Göstergeleri vaka dosyası sayfasından ekleyin.',
+  'Assign to campaign…': 'Kampanyaya ata…',
+  'Analyst notes': 'Analist notları',
+  'Add a note…': 'Not ekle…',
+  'No notes yet.': 'Henüz not yok.',
+  'Campaign timeline': 'Kampanya zaman çizelgesi',
+  'No telemetry snapshots yet for this evidence.':
+    'Bu kanıt için henüz telemetri anlık görüntüsü yok.',
+  'No evidence assigned yet.': 'Henüz atanmış kanıt yok.',
+  'Add indicator as evidence…': 'Kanıt olarak gösterge ekle…',
+  'ATT&CK coverage': 'ATT&CK kapsamı',
+  'No MITRE mappings yet.': 'Henüz MITRE eşlemesi yok.',
+  'Evidence note…': 'Kanıt notu…',
+  'Workspace': 'Çalışma alanı',
 }

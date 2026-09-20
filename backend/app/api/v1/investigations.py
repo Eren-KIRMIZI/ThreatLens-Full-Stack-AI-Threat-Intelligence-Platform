@@ -19,8 +19,16 @@ from app.core.rbac import require_role
 from app.repositories.investigation_repository import InvestigationRepository
 from app.repositories.registry_repository import RegistryRepository
 from app.schemas.investigations import (
+    CampaignCreate,
+    CampaignEvidenceCreate,
+    CampaignEvidenceOut,
+    CampaignEvidenceUpdate,
+    CampaignOut,
+    CampaignUpdate,
     InvestigationCreate,
     InvestigationItemOut,
+    InvestigationNoteCreate,
+    InvestigationNoteOut,
     InvestigationOut,
     InvestigationPage,
     InvestigationUpdate,
@@ -191,6 +199,196 @@ async def pinned_list(
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
 ) -> list[str]:
     return await repository.pinned_ids()
+
+
+@router.post(
+    "/{investigation_id}/case-notes",
+    response_model=InvestigationNoteOut,
+    status_code=201,
+    summary="Add a note to a case",
+)
+async def add_case_note(
+    investigation_id: str,
+    body: InvestigationNoteCreate,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> InvestigationNoteOut:
+    row = await repository.add_case_note(
+        investigation_id=investigation_id,
+        author=body.author,
+        body=body.body,
+    )
+    if row is None:
+        raise NotFoundError(
+            "The investigation was not found.", code="investigation_not_found"
+        )
+    return InvestigationNoteOut(**row.__dict__)
+
+
+@router.get(
+    "/{investigation_id}/case-notes",
+    response_model=list[InvestigationNoteOut],
+    summary="List notes of a case",
+)
+async def list_case_notes(
+    investigation_id: str,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+) -> list[InvestigationNoteOut]:
+    rows = await repository.case_notes(investigation_id)
+    return [InvestigationNoteOut(**row.__dict__) for row in rows]
+
+
+@router.delete("/notes/{note_id}", status_code=204)
+async def delete_case_note(
+    note_id: str,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> None:
+    if not await repository.delete_case_note(note_id):
+        raise NotFoundError("The note was not found.", code="note_not_found")
+
+
+@router.post(
+    "/{investigation_id}/campaigns",
+    response_model=CampaignOut,
+    status_code=201,
+    summary="Open a campaign inside a case",
+)
+async def create_campaign(
+    investigation_id: str,
+    body: CampaignCreate,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> CampaignOut:
+    row = await repository.create_campaign(
+        investigation_id=investigation_id,
+        name=body.name.strip(),
+        color=body.color,
+    )
+    if row is None:
+        raise NotFoundError(
+            "The investigation was not found.", code="investigation_not_found"
+        )
+    return _campaign_out(row, [])
+
+
+@router.get(
+    "/{investigation_id}/campaigns",
+    response_model=list[CampaignOut],
+    summary="List campaigns of a case",
+)
+async def list_campaigns(
+    investigation_id: str,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+) -> list[CampaignOut]:
+    rows = await repository.campaigns(investigation_id)
+    return [
+        _campaign_out(row, await repository.campaign_evidence(row.id))
+        for row in rows
+    ]
+
+
+@router.patch(
+    "/campaigns/{campaign_id}",
+    response_model=CampaignOut,
+    summary="Rename / recolor a campaign",
+)
+async def update_campaign(
+    campaign_id: str,
+    body: CampaignUpdate,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> CampaignOut:
+    row = await repository.update_campaign(
+        campaign_id, name=body.name, color=body.color
+    )
+    if row is None:
+        raise NotFoundError(
+            "The campaign was not found.", code="campaign_not_found"
+        )
+    return _campaign_out(row, await repository.campaign_evidence(campaign_id))
+
+
+@router.delete("/campaigns/{campaign_id}", status_code=204)
+async def delete_campaign(
+    campaign_id: str,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> None:
+    if not await repository.delete_campaign(campaign_id):
+        raise NotFoundError("The campaign was not found.", code="campaign_not_found")
+
+
+@router.post(
+    "/campaigns/{campaign_id}/evidence",
+    response_model=CampaignEvidenceOut,
+    status_code=201,
+    summary="Mark an indicator as evidence in a campaign",
+)
+async def add_campaign_evidence(
+    campaign_id: str,
+    body: CampaignEvidenceCreate,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> CampaignEvidenceOut:
+    row = await repository.add_campaign_evidence(
+        campaign_id=campaign_id,
+        analysis_id=body.analysis_id,
+        value=canonical_value(body.primary_type, body.value) or body.value,
+        primary_type=body.primary_type.upper(),
+        note=body.note,
+    )
+    if row is None:
+        raise NotFoundError("The campaign was not found.", code="campaign_not_found")
+    return CampaignEvidenceOut(**row.__dict__)
+
+
+@router.patch(
+    "/campaigns/{campaign_id}/evidence/{evidence_id}",
+    response_model=CampaignEvidenceOut,
+    summary="Annotate an evidence record",
+)
+async def update_campaign_evidence(
+    campaign_id: str,
+    evidence_id: str,
+    body: CampaignEvidenceUpdate,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> CampaignEvidenceOut:
+    row = await repository.update_campaign_evidence(evidence_id, note=body.note)
+    if row is None:
+        raise NotFoundError(
+            "The evidence was not found.", code="evidence_not_found"
+        )
+    return CampaignEvidenceOut(**row.__dict__)
+
+
+@router.delete(
+    "/campaigns/{campaign_id}/evidence/{evidence_id}",
+    status_code=204,
+    summary="Unmark an evidence record",
+)
+async def delete_campaign_evidence(
+    campaign_id: str,
+    evidence_id: str,
+    repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    _role: Annotated[str, Depends(require_role("analyst"))],
+) -> None:
+    if not await repository.delete_campaign_evidence(evidence_id):
+        raise NotFoundError(
+            "The evidence was not found.", code="evidence_not_found"
+        )
+
+
+def _campaign_out(row, evidence_rows) -> CampaignOut:
+    return CampaignOut(
+        id=row.id,
+        investigation_id=row.investigation_id,
+        name=row.name,
+        color=row.color,
+        created_at=row.created_at,
+        evidence=[CampaignEvidenceOut(**item.__dict__) for item in evidence_rows],
+    )
 
 
 def _to_out(row, items) -> InvestigationOut:

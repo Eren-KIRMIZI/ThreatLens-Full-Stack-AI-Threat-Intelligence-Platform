@@ -5,8 +5,11 @@ from app.models.alerts import Alert, AlertRule
 from app.models.investigations import (
     AnalysisNote,
     AnalysisTag,
+    Campaign,
+    CampaignEvidence,
     Investigation,
     InvestigationItem,
+    InvestigationNote,
     PinnedAnalysis,
 )
 from app.models.ioc import DistinctIndicator, IndicatorSnapshot, ProviderUsage
@@ -18,10 +21,13 @@ __all__ = [
     "Analysis",
     "AnalysisNote",
     "AnalysisTag",
+    "Campaign",
+    "CampaignEvidence",
     "DistinctIndicator",
     "IndicatorSnapshot",
     "Investigation",
     "InvestigationItem",
+    "InvestigationNote",
     "PinnedAnalysis",
     "ProviderUsage",
     "WatchlistItem",

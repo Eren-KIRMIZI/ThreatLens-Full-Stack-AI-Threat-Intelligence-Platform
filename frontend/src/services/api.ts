@@ -3,6 +3,8 @@ import type {
   AlertRule,
   AlertsPage,
   AnalysisResult,
+  Campaign,
+  CampaignEvidence,
   Digest,
   HealthStatus,
   HistoryPage,
@@ -13,6 +15,7 @@ import type {
   IOCParams,
   IndicatorType,
   Investigation,
+  InvestigationNote,
   InvestigationPage,
   MitreAnalysisMapping,
   MitreCatalog,
@@ -313,6 +316,112 @@ export async function setPinned(
 
 export async function fetchPinned(): Promise<string[]> {
   return request<string[]>('/investigations/pinned/list')
+}
+
+// --- Investigation workspace (notes / campaigns / evidence) ------------------ //
+
+export async function fetchInvestigationNotes(
+  investigationId: string,
+): Promise<InvestigationNote[]> {
+  return request<InvestigationNote[]>(
+    `/investigations/${investigationId}/case-notes`,
+  )
+}
+
+export async function addInvestigationNote(
+  investigationId: string,
+  body: { author: string; body: string },
+): Promise<InvestigationNote> {
+  return request<InvestigationNote>(
+    `/investigations/${investigationId}/case-notes`,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export async function deleteInvestigationNote(noteId: string): Promise<void> {
+  return requestVoid(`/investigations/notes/${noteId}`, { method: 'DELETE' })
+}
+
+export async function fetchCampaigns(
+  investigationId: string,
+): Promise<Campaign[]> {
+  return request<Campaign[]>(`/investigations/${investigationId}/campaigns`)
+}
+
+export async function createCampaign(
+  investigationId: string,
+  body: { name: string; color: string },
+): Promise<Campaign> {
+  return request<Campaign>(`/investigations/${investigationId}/campaigns`, {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(body),
+  })
+}
+
+export async function updateCampaign(
+  campaignId: string,
+  body: { name?: string; color?: string },
+): Promise<Campaign> {
+  return request<Campaign>(`/investigations/campaigns/${campaignId}`, {
+    method: 'PATCH',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(body),
+  })
+}
+
+export async function deleteCampaign(campaignId: string): Promise<void> {
+  return requestVoid(`/investigations/campaigns/${campaignId}`, {
+    method: 'DELETE',
+  })
+}
+
+export async function addCampaignEvidence(
+  campaignId: string,
+  body: {
+    analysis_id?: string | null
+    value: string
+    primary_type: string
+    note?: string | null
+  },
+): Promise<CampaignEvidence> {
+  return request<CampaignEvidence>(
+    `/investigations/campaigns/${campaignId}/evidence`,
+    {
+      method: 'POST',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export async function updateCampaignEvidence(
+  campaignId: string,
+  evidenceId: string,
+  body: { note?: string | null },
+): Promise<CampaignEvidence> {
+  return request<CampaignEvidence>(
+    `/investigations/campaigns/${campaignId}/evidence/${evidenceId}`,
+    {
+      method: 'PATCH',
+      headers: JSON_HEADERS,
+      body: JSON.stringify(body),
+    },
+  )
+}
+
+export async function deleteCampaignEvidence(
+  campaignId: string,
+  evidenceId: string,
+): Promise<void> {
+  return requestVoid(
+    `/investigations/campaigns/${campaignId}/evidence/${evidenceId}`,
+    { method: 'DELETE' },
+  )
 }
 
 // --- Watchlist & alerts ------------------------------------------------------- //

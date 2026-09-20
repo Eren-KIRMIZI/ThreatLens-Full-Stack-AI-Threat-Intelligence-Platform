@@ -8,6 +8,7 @@ import { GraphPage } from './pages/Graph'
 import { HistoryPage } from './pages/History'
 import { Hunt } from './pages/Hunt'
 import { InvestigationsPage } from './pages/Investigations'
+import { InvestigationWorkspacePage } from './pages/InvestigationWorkspacePage'
 import { IOCsPage } from './pages/IOCs'
 import { MitreMatrix } from './pages/MitreMatrix'
 import { Reports } from './pages/Reports'
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: 'history', element: <HistoryPage /> },
       { path: 'iocs', element: <IOCsPage /> },
       { path: 'investigations', element: <InvestigationsPage /> },
+      { path: 'investigations/:caseId/workspace', element: <InvestigationWorkspacePage /> },
       { path: 'watchlist', element: <WatchlistPage /> },
       { path: 'reports', element: <Reports /> },
       { path: 'settings', element: <Settings /> },

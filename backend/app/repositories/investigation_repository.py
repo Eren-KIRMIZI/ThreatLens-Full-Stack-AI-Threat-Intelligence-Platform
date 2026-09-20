@@ -14,8 +14,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.investigations import (
     AnalysisNote,
     AnalysisTag,
+    Campaign,
+    CampaignEvidence,
     Investigation,
     InvestigationItem,
+    InvestigationNote,
     PinnedAnalysis,
 )
 
@@ -188,5 +191,157 @@ class InvestigationRepository:
     async def pinned_ids(self) -> list[str]:
         statement = select(PinnedAnalysis.analysis_id).order_by(
             PinnedAnalysis.pinned_at.desc()
+        )
+        return list((await self._session.scalars(statement)).all())
+
+    # --- case-level notes ------------------------------------------------------ #
+
+    async def add_case_note(
+        self, *, investigation_id: str, author: str, body: str
+    ) -> InvestigationNote | None:
+        case = await self._session.get(Investigation, investigation_id)
+        if case is None:
+            return None
+        row = InvestigationNote(
+            id=str(uuid.uuid4()),
+            investigation_id=investigation_id,
+            author=author,
+            body=body,
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return row
+
+    async def case_notes(self, investigation_id: str) -> list[InvestigationNote]:
+        statement = (
+            select(InvestigationNote)
+            .where(InvestigationNote.investigation_id == investigation_id)
+            .order_by(InvestigationNote.created_at.desc())
+        )
+        return list((await self._session.scalars(statement)).all())
+
+    async def delete_case_note(self, note_id: str) -> bool:
+        row = await self._session.get(InvestigationNote, note_id)
+        if row is None:
+            return False
+        await self._session.delete(row)
+        await self._session.commit()
+        return True
+
+    # --- campaigns -------------------------------------------------------------- #
+
+    async def create_campaign(
+        self, *, investigation_id: str, name: str, color: str
+    ) -> Campaign | None:
+        case = await self._session.get(Investigation, investigation_id)
+        if case is None:
+            return None
+        row = Campaign(
+            id=str(uuid.uuid4()),
+            investigation_id=investigation_id,
+            name=name,
+            color=color,
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return row
+
+    async def campaigns(self, investigation_id: str) -> list[Campaign]:
+        statement = (
+            select(Campaign)
+            .where(Campaign.investigation_id == investigation_id)
+            .order_by(Campaign.created_at.asc())
+        )
+        return list((await self._session.scalars(statement)).all())
+
+    async def update_campaign(
+        self, campaign_id: str, *, name: str | None, color: str | None
+    ) -> Campaign | None:
+        row = await self._session.get(Campaign, campaign_id)
+        if row is None:
+            return None
+        if name is not None:
+            row.name = name
+        if color is not None:
+            row.color = color
+        await self._session.commit()
+        return row
+
+    async def delete_campaign(self, campaign_id: str) -> bool:
+        row = await self._session.get(Campaign, campaign_id)
+        if row is None:
+            return False
+        evidence = await self._session.execute(
+            select(CampaignEvidence).where(
+                CampaignEvidence.campaign_id == campaign_id
+            )
+        )
+        for entry in evidence.scalars().all():
+            await self._session.delete(entry)
+        await self._session.delete(row)
+        await self._session.commit()
+        return True
+
+    # --- campaign evidence ------------------------------------------------------ #
+
+    async def add_campaign_evidence(
+        self,
+        *,
+        campaign_id: str,
+        analysis_id: str | None,
+        value: str,
+        primary_type: str,
+        note: str | None,
+    ) -> CampaignEvidence | None:
+        campaign = await self._session.get(Campaign, campaign_id)
+        if campaign is None:
+            return None
+        row = CampaignEvidence(
+            id=str(uuid.uuid4()),
+            campaign_id=campaign_id,
+            investigation_id=campaign.investigation_id,
+            analysis_id=analysis_id,
+            value=value,
+            primary_type=primary_type,
+            note=note,
+        )
+        self._session.add(row)
+        await self._session.commit()
+        return row
+
+    async def campaign_evidence(self, campaign_id: str) -> list[CampaignEvidence]:
+        statement = (
+            select(CampaignEvidence)
+            .where(CampaignEvidence.campaign_id == campaign_id)
+            .order_by(CampaignEvidence.created_at.desc())
+        )
+        return list((await self._session.scalars(statement)).all())
+
+    async def update_campaign_evidence(
+        self, evidence_id: str, *, note: str | None
+    ) -> CampaignEvidence | None:
+        row = await self._session.get(CampaignEvidence, evidence_id)
+        if row is None:
+            return None
+        if note is not None:
+            row.note = note
+        await self._session.commit()
+        return row
+
+    async def delete_campaign_evidence(self, evidence_id: str) -> bool:
+        row = await self._session.get(CampaignEvidence, evidence_id)
+        if row is None:
+            return False
+        await self._session.delete(row)
+        await self._session.commit()
+        return True
+
+    async def evidence_for_investigation(
+        self, investigation_id: str
+    ) -> list[CampaignEvidence]:
+        statement = (
+            select(CampaignEvidence)
+            .where(CampaignEvidence.investigation_id == investigation_id)
+            .order_by(CampaignEvidence.created_at.desc())
         )
         return list((await self._session.scalars(statement)).all())

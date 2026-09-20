@@ -65,3 +65,56 @@ class NoteOut(BaseModel):
 
 class TagCreate(BaseModel):
     tag: str
+
+
+class InvestigationNoteCreate(BaseModel):
+    author: str = "analyst"
+    body: str
+
+
+class InvestigationNoteOut(BaseModel):
+    id: str
+    investigation_id: str
+    author: str
+    body: str
+    created_at: datetime | None = None
+
+
+class CampaignCreate(BaseModel):
+    name: str
+    color: str = "info"
+
+
+class CampaignUpdate(BaseModel):
+    name: str | None = None
+    color: str | None = None
+
+
+class CampaignEvidenceCreate(BaseModel):
+    value: str
+    primary_type: str = "HASH"
+    analysis_id: str | None = None
+    note: str | None = None
+
+
+class CampaignEvidenceUpdate(BaseModel):
+    note: str | None = None
+
+
+class CampaignEvidenceOut(BaseModel):
+    id: str
+    campaign_id: str
+    analysis_id: str | None = None
+    value: str
+    primary_type: str
+    note: str | None = None
+    created_at: datetime | None = None
+
+
+class CampaignOut(BaseModel):
+    id: str
+    investigation_id: str
+    name: str
+    color: str
+    created_at: datetime | None = None
+    evidence: list[CampaignEvidenceOut] = Field(default_factory=list)

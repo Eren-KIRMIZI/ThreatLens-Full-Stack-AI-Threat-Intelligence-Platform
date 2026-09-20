@@ -1,18 +1,26 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  addCampaignEvidence,
   addInvestigationItem,
+  addInvestigationNote,
   addNote,
   addTag,
   addWatchlistItem,
+  createCampaign,
   createInvestigation,
+  deleteCampaign,
+  deleteCampaignEvidence,
   deleteInvestigation,
+  deleteInvestigationNote,
   deleteRule,
   fetchAlerts,
+  fetchCampaigns,
   fetchDigest,
   fetchIOC,
   fetchIOCs,
   fetchInvestigation,
+  fetchInvestigationNotes,
   fetchInvestigations,
   fetchMitreAnalysis,
   fetchMitreCatalog,
@@ -29,6 +37,8 @@ import {
   rescanOne,
   setPinned,
   setWatchlistEnabled,
+  updateCampaign,
+  updateCampaignEvidence,
   updateInvestigation,
   upsertRule,
 } from '../services/api'
@@ -154,6 +164,119 @@ export function useAddInvestigationItem(id: string) {
       void queryClient.invalidateQueries({ queryKey: ['investigation', id] })
       void queryClient.invalidateQueries({ queryKey: ['investigations'] })
     },
+  })
+}
+
+// --- Investigation workspace (notes / campaigns / evidence) ------------------- //
+
+export function useInvestigationNotes(investigationId: string | undefined) {
+  return useQuery({
+    queryKey: ['case-notes', investigationId],
+    queryFn: () => fetchInvestigationNotes(investigationId!),
+    enabled: Boolean(investigationId),
+  })
+}
+
+export function useAddInvestigationNote(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { author: string; body: string }) =>
+      addInvestigationNote(investigationId, body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['case-notes', investigationId],
+      }),
+  })
+}
+
+export function useDeleteInvestigationNote() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteInvestigationNote,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['case-notes'] }),
+  })
+}
+
+export function useCampaigns(investigationId: string | undefined) {
+  return useQuery({
+    queryKey: ['campaigns', investigationId],
+    queryFn: () => fetchCampaigns(investigationId!),
+    enabled: Boolean(investigationId),
+  })
+}
+
+export function useCreateCampaign(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { name: string; color: string }) =>
+      createCampaign(investigationId, body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
+  })
+}
+
+export function useUpdateCampaign(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (args: { campaignId: string; body: { name?: string; color?: string } }) =>
+      updateCampaign(args.campaignId, args.body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
+  })
+}
+
+export function useDeleteCampaign(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: deleteCampaign,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
+  })
+}
+
+export function useAddCampaignEvidence(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      args: {
+        campaignId: string
+        body: {
+          analysis_id?: string | null
+          value: string
+          primary_type: string
+          note?: string | null
+        }
+      },
+    ) => addCampaignEvidence(args.campaignId, args.body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
+  })
+}
+
+export function useUpdateCampaignEvidence(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      args: {
+        campaignId: string
+        evidenceId: string
+        body: { note?: string | null }
+      },
+    ) => updateCampaignEvidence(args.campaignId, args.evidenceId, args.body),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
+  })
+}
+
+export function useDeleteCampaignEvidence(investigationId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (
+      args: { campaignId: string; evidenceId: string },
+    ) => deleteCampaignEvidence(args.campaignId, args.evidenceId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['campaigns', investigationId] }),
   })
 }
 
