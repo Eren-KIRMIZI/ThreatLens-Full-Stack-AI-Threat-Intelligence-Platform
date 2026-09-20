@@ -129,6 +129,8 @@ async def add_item(
     item_type = primary_type.upper() if primary_type else None
     if item_type is None:
         item_type = (await _infer_type(registry, canonical)) or "HASH"
+    if analysis_id is None:
+        analysis_id = await _resolve_analysis_id(registry, canonical)
     row = await repository.add_item(
         investigation_id=investigation_id,
         value=canonical,
@@ -329,12 +331,17 @@ async def add_campaign_evidence(
     campaign_id: str,
     body: CampaignEvidenceCreate,
     repository: Annotated[InvestigationRepository, Depends(get_investigation_repository)],
+    registry: Annotated[RegistryRepository, Depends(get_registry_repository)],
     _role: Annotated[str, Depends(require_role("analyst"))],
 ) -> CampaignEvidenceOut:
+    canonical = canonical_value(body.primary_type, body.value) or body.value
+    analysis_id = body.analysis_id
+    if analysis_id is None:
+        analysis_id = await _resolve_analysis_id(registry, canonical)
     row = await repository.add_campaign_evidence(
         campaign_id=campaign_id,
-        analysis_id=body.analysis_id,
-        value=canonical_value(body.primary_type, body.value) or body.value,
+        analysis_id=analysis_id,
+        value=canonical,
         primary_type=body.primary_type.upper(),
         note=body.note,
     )
@@ -410,3 +417,19 @@ async def _infer_type(registry: RegistryRepository, value: str) -> str | None:
     except Exception:
         item = None
     return item.primary_type if item else None
+
+
+async def _resolve_analysis_id(
+    registry: RegistryRepository, canonical_value: str
+) -> str | None:
+    """Link the latest stored analysis for an indicator when none was given.
+
+    This is what lights up MITRE coverage and CDC timelines for evidence
+    that was added after the indicator was already analyzed: the case never
+    has to ask for an analysis id explicitly.
+    """
+    try:
+        latest = await registry.analyses_for_indicator(canonical_value, limit=1)
+    except Exception:
+        latest = []
+    return latest[0].id if latest else None
