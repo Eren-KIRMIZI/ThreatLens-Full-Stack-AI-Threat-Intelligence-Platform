@@ -13,6 +13,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { LEVEL_STYLE, formatDate, shortId } from '../analysis/level'
 import { ThreatGauge } from '../analysis/ThreatGauge'
+import { EscalateToCase } from './EscalateToCase'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { analyzeIndicator } from '../../services/api'
@@ -45,7 +46,10 @@ export function EmailForensicReport({ report }: EmailForensicReportProps) {
 
   return (
     <div className="space-y-5">
-      <Panel title={t('Forensic verdict')}>
+      <Panel
+        title={t('Forensic verdict')}
+        action={<EscalateToCase report={report} />}
+      >
         <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <ThreatGauge score={report.risk_score} level={report.risk_level} />
 
