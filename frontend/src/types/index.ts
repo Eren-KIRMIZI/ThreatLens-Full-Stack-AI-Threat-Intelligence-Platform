@@ -443,6 +443,72 @@ export interface RescanOutcome {
   error: string | null
 }
 
+// --- Phishing forensics (email) --------------------------------------------- //
+
+export interface ForensicHeader {
+  name: string
+  value: string
+}
+
+export interface HeaderFinding {
+  label: string
+  detail: string
+  risk: number
+}
+
+export interface ForensicLink {
+  url: string
+  display_text: string | null
+  domain: string | null
+  brand: string | null
+  brand_risk: boolean
+  https: boolean
+  ip_host: boolean
+  shortener: boolean
+  suspicious_tld: boolean
+  risk: number
+}
+
+export interface TrackingPixel {
+  url: string | null
+  width: string | null
+  height: string | null
+  transparent: boolean
+}
+
+export interface ForensicAttachment {
+  filename: string | null
+  content_type: string | null
+  size_bytes: number | null
+  sha256: string | null
+  risky_extension: boolean
+}
+
+export interface EmailBrief {
+  subject: string | null
+  date: string | null
+  sender_display: string | null
+  sender_email: string | null
+  sender_domain: string | null
+  reply_to: string | null
+  message_id: string | null
+}
+
+export interface EmailForensicOut {
+  brief: EmailBrief
+  header_findings: HeaderFinding[]
+  urls: ForensicLink[]
+  tracking_pixels: TrackingPixel[]
+  attachments: ForensicAttachment[]
+  rule_hits: string[]
+  risk_score: number
+  risk_level: ThreatLevel
+  summary_points: string[]
+  mitigations: string[]
+  html_source: string | null
+  text_body: string | null
+}
+
 export interface RescanReport {
   checked: number
   outcomes: RescanOutcome[]

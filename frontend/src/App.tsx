@@ -4,6 +4,7 @@ import { AppLayout } from './components/layout/AppLayout'
 import { AnalysisDetail } from './pages/AnalysisDetail'
 import { Analyze } from './pages/Analyze'
 import { Dashboard } from './pages/Dashboard'
+import { Forensics } from './pages/Forensics'
 import { GraphPage } from './pages/Graph'
 import { HistoryPage } from './pages/History'
 import { Hunt } from './pages/Hunt'
@@ -25,6 +26,7 @@ const router = createBrowserRouter([
       { path: 'analysis/:analysisId', element: <AnalysisDetail /> },
       { path: 'analysis/:analysisId/graph', element: <GraphPage /> },
       { path: 'hunt', element: <Hunt /> },
+      { path: 'forensics', element: <Forensics /> },
       { path: 'mitre', element: <MitreMatrix /> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'iocs', element: <IOCsPage /> },

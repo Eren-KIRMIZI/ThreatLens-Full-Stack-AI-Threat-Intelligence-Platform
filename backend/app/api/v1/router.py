@@ -6,6 +6,7 @@ from app.api.v1 import (
     analyze,
     analysis,
     exports,
+    forensics,
     health,
     history,
     intel,
@@ -26,3 +27,4 @@ api_router.include_router(investigations.router)
 api_router.include_router(watchlist.router)
 api_router.include_router(intel.router)
 api_router.include_router(exports.router)
+api_router.include_router(forensics.router)

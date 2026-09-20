@@ -6,6 +6,7 @@ import type {
   Campaign,
   CampaignEvidence,
   Digest,
+  EmailForensicOut,
   HealthStatus,
   HistoryPage,
   HistoryParams,
@@ -126,6 +127,22 @@ export async function analyzeIndicator(
     method: 'POST',
     headers: JSON_HEADERS,
     body: analyzeBody(mode, value, ai),
+  })
+}
+
+/** Run in-memory phishing forensics on an uploaded email message (.eml). */
+export async function forensicEmail(file: File): Promise<EmailForensicOut> {
+  const form = new FormData()
+  form.append('file', file)
+  return request<EmailForensicOut>('/forensics/email', { method: 'POST', body: form })
+}
+
+/** Run in-memory phishing forensics on raw RFC-822 text. */
+export async function forensicEmailRaw(raw: string): Promise<EmailForensicOut> {
+  return request<EmailForensicOut>('/forensics/email/raw', {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ raw }),
   })
 }
 

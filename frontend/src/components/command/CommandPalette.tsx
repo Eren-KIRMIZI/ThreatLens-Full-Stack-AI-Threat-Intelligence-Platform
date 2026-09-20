@@ -11,6 +11,7 @@ import {
   History,
   LayoutDashboard,
   LayoutGrid,
+  Mail,
   Radar,
   Search,
   Settings2,
@@ -79,6 +80,7 @@ function buildCommands(navigate: ReturnType<typeof useNavigate>): CommandItem[] 
     { id: 'nav-watchlist', label: 'Watchlist', icon: BellRing, group: 'Navigate', run: () => navigate('/watchlist') },
     { id: 'nav-investigations', label: 'Investigations', icon: FolderOpen, group: 'Navigate', run: () => navigate('/investigations') },
     { id: 'nav-mitre', label: 'MITRE ATT&CK', icon: LayoutGrid, group: 'Navigate', run: () => navigate('/mitre') },
+    { id: 'nav-forensics', label: 'Phishing Forensics', icon: Mail, group: 'Navigate', run: () => navigate('/forensics') },
     { id: 'nav-reports', label: 'Reports', icon: FileText, group: 'Navigate', run: () => navigate('/reports') },
     { id: 'nav-settings', label: 'Settings', icon: Settings2, group: 'Navigate', run: () => navigate('/settings') },
   ]

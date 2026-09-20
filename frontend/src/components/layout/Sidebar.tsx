@@ -9,6 +9,7 @@ import {
   History,
   LayoutDashboard,
   LayoutGrid,
+  Mail,
   PanelLeftClose,
   PanelLeftOpen,
   Radar,
@@ -59,7 +60,10 @@ const NAV: NavGroup[] = [
   },
   {
     group: 'Detection',
-    items: [{ to: '/mitre', label: 'MITRE ATT&CK', icon: LayoutGrid }],
+    items: [
+      { to: '/forensics', label: 'Phishing Forensics', icon: Mail },
+      { to: '/mitre', label: 'MITRE ATT&CK', icon: LayoutGrid },
+    ],
   },
   {
     group: 'Reporting',
