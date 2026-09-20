@@ -609,4 +609,115 @@ export const tr: Record<string, string> = {
     'İlişkisini, kararını ve ham kanıt meta verisini incelemek için herhangi bir düğüme tıklayın.',
   'click a node for details': 'detaylar için bir düğüme tıklayın',
   'node id': 'düğüm kimliği',
+
+  // --- Mission Control (Overview) -------------------------------------------- //
+  operations: 'operasyon',
+  'Mission Control': 'Görev Kontrol',
+  'Checking the intelligence pipeline…': 'İstihbarat hattı kontrol ediliyor…',
+  'Your intelligence environment is stable — {ok} of {total} sources are operational.':
+    'İstihbarat ortamınız istikrarlı — {total} kaynağın {ok} tanesi çalışıyor.',
+  'Some intelligence sources are unavailable — {ok} of {total} operational. Confidence adjusts accordingly.':
+    'Bazı istihbarat kaynakları kullanılamıyor — {total} kaynağın {ok} tanesi çalışır durumda. Güven buna göre ayarlanıyor.',
+  'System telemetry': 'Sistem telemetrisi',
+  'System status': 'Sistem durumu',
+  Pipeline: 'Hat',
+  Standby: 'Beklemede',
+  online: 'çevrimiçi',
+  active: 'aktif',
+  open: 'açık',
+  unseen: 'okunmamış',
+  tracked: 'takip edilen',
+  'New detections': 'Yeni tespitler',
+  'malicious or critical verdicts': 'kötü amaçlı veya kritik kararlar',
+  'distinct indicators tracked': 'takip edilen benzersiz göstergeler',
+  'Open investigations': 'Açık soruşturmalar',
+  'awaiting analyst attention': 'analist ilgisi bekliyor',
+  'watchlist rules firing': 'izleme listesi kuralı tetikleniyor',
+  'Active investigations': 'Aktif soruşturmalar',
+  'No open investigations': 'Açık soruşturma yok',
+  'Investigations appear here when evidence gets organized around an indicator.':
+    'Kanıtlar bir gösterge etrafında toplandığında soruşturmalar burada görünür.',
+  indicators: 'gösterge',
+  'Recent activity': 'Son aktivite',
+  'Source telemetry': 'Kaynak telemetrisi',
+  'Intelligence sources': 'İstihbarat kaynakları',
+
+  // --- Sidebar / navigation --------------------------------------------------- //
+  Overview: 'Genel Bakış',
+  Intelligence: 'İstihbarat',
+  Detection: 'Tespit',
+  Reporting: 'Raporlama',
+  'Search or run a command': 'Ara veya bir komut çalıştır',
+  Collapse: 'Daralt',
+  'Expand navigation': 'Gezinmeyi genişlet',
+
+  // --- Command palette --------------------------------------------------------- //
+  'Command palette': 'Komut paleti',
+  'Type a command or search…': 'Bir komut yazın veya arayın…',
+  Navigate: 'Git',
+  'No command matches “{query}”.': '“{query}” ile eşleşen komut yok.',
+  navigate: 'gezin',
+  'Hunt indicators': 'Gösterge avla',
+  'New investigation': 'Yeni soruşturma',
+  'Manage watchlist': 'İzleme listesini yönet',
+  'Generate report': 'Rapor oluştur',
+
+  // --- IOC story ---------------------------------------------------------------- //
+  'IOC story': 'IOC hikâyesi',
+  'The story so far': 'Şimdiye kadarki hikâye',
+  'Building the story…': 'Hikâye oluşturuluyor…',
+  'First observed': 'İlk kez görüldü',
+  'First seen': 'İlk görülme',
+  Observations: 'Gözlem',
+  'Latest score': 'Son skor',
+  'Latest verdict': 'Son karar',
+  'No verdict': 'Karar yok',
+  'Snapshot history': 'Anlık görüntü geçmişi',
+  'This analysis': 'Bu analiz',
+  'Verdict changed: {from} → {to}': 'Karar değişti: {from} → {to}',
+  'Threat score climbed: {a} → {b}': 'Tehdit skoru yükseldi: {a} → {b}',
+  'Threat score dropped: {a} → {b}': 'Tehdit skoru düştü: {a} → {b}',
+  'Malicious detections: {a} → {b}': 'Kötü amaçlı tespitler: {a} → {b}',
+  'Suspicious detections: {a} → {b}': 'Şüpheli tespitler: {a} → {b}',
+  'First observed {date}.': 'İlk kez görüldü: {date}.',
+  'Re-analyzed {n} more times since; the latest pass was {date}.':
+    'O zamandan beri {n} kez daha analiz edildi; son geçiş {date} tarihindeydi.',
+  'Observed once — there is no longitudinal history yet.':
+    'Yalnızca bir kez görüldü — henüz uzunlamasına bir geçmiş yok.',
+  'The threat score climbed from {a} to {b}.': 'Tehdit skoru {a}’den {b}’ye yükseldi.',
+  'The threat score dropped from {a} to {b}.': 'Tehdit skoru {a}’den {b}’ye düştü.',
+  'The threat score has remained stable at {b}.': 'Tehdit skoru {b}’de sabit kaldı.',
+  'The registry holds no threat score for this indicator yet.':
+    'Kayıt defterinde bu gösterge için henüz tehdit skoru yok.',
+  'Malicious engine detections rose from {a} to {b}.': 'Kötü amaçlı motor tespitleri {a}’den {b}’ye yükseldi.',
+  'Malicious engine detections fell from {a} to {b}.': 'Kötü amaçlı motor tespitleri {a}’den {b}’ye düştü.',
+  'The malicious engine count stayed at {b}.': 'Kötü amaçlı motor sayısı {b}’de kaldı.',
+  'Current verdict: {level} ({score} of 100), seen at {date}.':
+    'Güncel karar: {level} (100 üzerinden {score}), {date} tarihinde görüldü.',
+  'No deterministic verdict yet — the evidence is thin.':
+    'Henüz kesin bir karar yok — kanıtlar zayıf.',
+  'A single observation anchors limited confidence — keep monitoring.':
+    'Tek bir gözlem sınırlı güvene işaret eder — izlemeye devam edin.',
+  'Next actions': 'Sonraki adımlar',
+  'What should an analyst do next?': 'Analist sırada ne yapmalı?',
+  'Block the indicator at the perimeter.': 'Göstergeyi çevrede engelleyin.',
+  'Search endpoints and EDR for the related hashes or hosts.':
+    'İlgili hash veya ana bilgisayarları uç nokta ve EDR üzerinde arayın.',
+  'Review DNS and firewall logs for outbound contact.':
+    'Giden bağlantı için DNS ve güvenlik duvarı günlüklerini inceleyin.',
+  'Open an investigation and attach this evidence.':
+    'Bir soruşturma açın ve bu kanıtı iliştirin.',
+  'Add the indicator to the watchlist for automated rescan.':
+    'Otomatik yeniden tarama için göstergeyi izleme listesine ekleyin.',
+  'Monitor outbound connections toward it over the next 24 hours.':
+    'Sonraki 24 saat içinde ona yönelik giden bağlantıları izleyin.',
+  'Gather passive enrichment: RDAP, DNS and certificates.':
+    'Pasif zenginleştirme toplayın: RDAP, DNS ve sertifikalar.',
+  'Document the indicator as benign in the investigation notes.':
+    'Göstergeyi soruşturma notlarında zararsız olarak belgeleyin.',
+  'Re-analyze the indicator to capture a fresh snapshot.':
+    'Taze bir anlık görüntü almak için göstergeyi yeniden analiz edin.',
+  'Add it to the watchlist so changes are caught automatically.':
+    'Değişikliklerin otomatik yakalanması için onu izleme listesine ekleyin.',
+  'View relationship graph': 'İlişki grafiğini görüntüle',
 }

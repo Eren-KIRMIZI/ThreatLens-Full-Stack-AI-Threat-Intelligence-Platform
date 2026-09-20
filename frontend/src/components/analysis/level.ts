@@ -15,25 +15,25 @@ export const LEVEL_STYLE: Record<
     text: 'text-clean',
     bg: 'bg-clean/12',
     border: 'border-clean/30',
-    ring: '#34d399',
+    ring: '#30d158',
   },
   suspicious: {
     text: 'text-elevated',
     bg: 'bg-elevated/12',
     border: 'border-elevated/30',
-    ring: '#fbbf24',
+    ring: '#ffd60a',
   },
   malicious: {
     text: 'text-high',
     bg: 'bg-high/12',
     border: 'border-high/30',
-    ring: '#fb923c',
+    ring: '#ff9f0a',
   },
   critical: {
     text: 'text-critical',
     bg: 'bg-critical/12',
     border: 'border-critical/30',
-    ring: '#fb7185',
+    ring: '#ff453a',
   },
 }
 

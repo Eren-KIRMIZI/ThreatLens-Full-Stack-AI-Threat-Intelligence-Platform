@@ -3,37 +3,41 @@
 @import '@fontsource-variable/jetbrains-mono';
 
 @theme {
-  /* Surfaces — deep graphite scale (cool, neutral, calm) */
-  --color-bg: #0b0e10;
-  --color-surface: #101418;
-  --color-surface-2: #161b20;
-  --color-surface-3: #1c2329;
-  --color-surface-4: #242d35;
+  /* Surfaces — near-black graphite scale (mission-control calm) */
+  --color-bg: #08090a;
+  --color-surface: #101214;
+  --color-surface-2: #16191c;
+  --color-surface-3: #1d2228;
+  --color-surface-4: #262d34;
 
   /* Hairlines */
-  --color-border: #1e252d;
-  --color-border-strong: #2b343e;
+  --color-border: #1f252c;
+  --color-border-strong: #2e373f;
 
   /* Ink */
-  --color-ink: #e9edf0;
-  --color-ink-2: #99a5ad;
-  --color-ink-3: #5e6b75;
+  --color-ink: #f5f5f7;
+  --color-ink-2: #8b9198;
+  --color-ink-3: #5b646e;
 
-  /* Brand accent — emerald signal, drawn from the severity ladder */
-  --color-accent: #10b981;
-  --color-accent-strong: #34d399;
-  --color-accent-dim: #0b9e72;
+  /* Brand accent — restrained signal blue, not an AI brand colour */
+  --color-accent: #0a84ff;
+  --color-accent-strong: #409cff;
+  --color-accent-dim: #0a6ad1;
 
-  /* Severity */
-  --color-low: #34d399;
+  /* Severity — Apple system signal scale */
+  --color-low: #30d158;
   --color-moderate: #a3e635;
-  --color-elevated: #fbbf24;
-  --color-high: #fb923c;
-  --color-critical: #fb7185;
-  --color-clean: #34d399;
-  --color-suspicious: #fbbf24;
-  --color-ok: #34d399;
-  --color-warn: #fbbf24;
+  --color-elevated: #ffd60a;
+  --color-high: #ff9f0a;
+  --color-critical: #ff453a;
+  --color-clean: #30d158;
+  --color-suspicious: #ffd60a;
+  --color-ok: #30d158;
+  --color-warn: #ff9f0a;
+  --color-success: #30d158;
+  --color-warning: #ff9f0a;
+  --color-danger: #ff453a;
+  --color-info: #0a84ff;
 
   --font-sans:
     'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
@@ -52,19 +56,14 @@
     @apply bg-bg font-sans text-ink antialiased;
     background-image:
       radial-gradient(
-        1100px 520px at 82% -12%,
-        color-mix(in srgb, var(--color-accent-dim) 6%, transparent),
+        920px 500px at 78% -14%,
+        color-mix(in srgb, var(--color-surface-3) 34%, transparent),
         transparent 62%
-      ),
-      radial-gradient(
-        900px 460px at -8% 112%,
-        color-mix(in srgb, var(--color-accent-dim) 4%, transparent),
-        transparent 58%
       ),
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--color-bg) 92%, white) 0%,
-        var(--color-bg) 34%
+        color-mix(in srgb, var(--color-bg) 96%, white) 0%,
+        var(--color-bg) 30%
       );
     background-attachment: fixed;
   }

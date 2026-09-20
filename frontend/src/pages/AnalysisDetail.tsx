@@ -22,6 +22,7 @@ import { EmptyState } from '../components/ui/EmptyState'
 import { Spinner } from '../components/ui/Spinner'
 import { AnalysisResultView } from '../components/analysis/AnalysisResultView'
 import { AiAnalysisView } from '../components/analysis/AiAnalysisView'
+import { IocStory } from '../components/analysis/IocStory'
 import { formatDate } from '../components/analysis/level'
 import {
   analysisJsonUrl,
@@ -147,6 +148,11 @@ export function AnalysisDetail() {
         analysis.data && (
           <>
             <AnalysisResultView result={analysis.data} />
+
+            <IocStory
+              indicator={analysis.data.indicator}
+              currentAnalysisId={analysisId}
+            />
 
             <Panel
               eyebrow={t('ATT&CK mapping')}
