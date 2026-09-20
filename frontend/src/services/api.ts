@@ -544,3 +544,36 @@ export function yaraUrl(analysisId: string): string {
 export function sigmaUrl(analysisId: string): string {
   return download(`/export/analyses/${analysisId}/sigma`)
 }
+
+function filenameFromDisposition(disposition: string, fallback: string): string {
+  const match = /filename="?([^";]+)"?/i.exec(disposition)
+  return match?.[1] ?? fallback
+}
+
+/** Download an export endpoint as a file in-place (no new tab). */
+export async function downloadExport(path: string, fallback: string): Promise<void> {
+  const url = /^https?:\/\//i.test(path) ? path : apiUrl(path)
+  const res = await fetch(url)
+  if (!res.ok) {
+    let message = `Download failed (${res.status})`
+    try {
+      const payload = (await res.json()) as ApiErrorPayload
+      if (payload?.error?.message) message = payload.error.message
+    } catch {
+      // Non-JSON error body; keep the generic message.
+    }
+    throw new ApiRequestError(res.status, { code: 'download_error', message })
+  }
+  const blob = await res.blob()
+  const objectUrl = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = objectUrl
+  anchor.download = filenameFromDisposition(
+    res.headers.get('Content-Disposition') ?? '',
+    fallback,
+  )
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(objectUrl)
+}
