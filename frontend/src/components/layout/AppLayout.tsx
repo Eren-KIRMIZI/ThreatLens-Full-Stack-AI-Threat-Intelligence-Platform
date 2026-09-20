@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { Sidebar } from './Sidebar'
+import { Spinner } from '../ui/Spinner'
 import { StatusBar } from './StatusBar'
 import { TopBar } from './TopBar'
 import { CommandPaletteProvider } from '../command/CommandPalette'
@@ -38,7 +39,15 @@ export function AppLayout() {
           <TopBar onMenuClick={() => setMobileNavOpen(true)} />
           <main className="min-h-0 flex-1 overflow-y-auto">
             <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-8 md:py-8">
-              <Outlet />
+              <Suspense
+                fallback={
+                  <div className="flex min-h-[40vh] items-center justify-center">
+                    <Spinner className="h-6 w-6" />
+                  </div>
+                }
+              >
+                <Outlet />
+              </Suspense>
             </div>
           </main>
           <StatusBar />

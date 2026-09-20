@@ -1,20 +1,32 @@
+import { lazy } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { AppLayout } from './components/layout/AppLayout'
-import { AnalysisDetail } from './pages/AnalysisDetail'
-import { Analyze } from './pages/Analyze'
-import { Dashboard } from './pages/Dashboard'
-import { Forensics } from './pages/Forensics'
-import { GraphPage } from './pages/Graph'
-import { HistoryPage } from './pages/History'
-import { Hunt } from './pages/Hunt'
-import { InvestigationsPage } from './pages/Investigations'
-import { InvestigationWorkspacePage } from './pages/InvestigationWorkspacePage'
-import { IOCsPage } from './pages/IOCs'
-import { MitreMatrix } from './pages/MitreMatrix'
-import { Reports } from './pages/Reports'
-import { Settings } from './pages/Settings'
-import { WatchlistPage } from './pages/Watchlist'
+
+const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
+const Analyze = lazy(() => import('./pages/Analyze').then((m) => ({ default: m.Analyze })))
+const AnalysisDetail = lazy(() =>
+  import('./pages/AnalysisDetail').then((m) => ({ default: m.AnalysisDetail })),
+)
+const GraphPage = lazy(() => import('./pages/Graph').then((m) => ({ default: m.GraphPage })))
+const Hunt = lazy(() => import('./pages/Hunt').then((m) => ({ default: m.Hunt })))
+const Forensics = lazy(() => import('./pages/Forensics').then((m) => ({ default: m.Forensics })))
+const MitreMatrix = lazy(() =>
+  import('./pages/MitreMatrix').then((m) => ({ default: m.MitreMatrix })),
+)
+const HistoryPage = lazy(() => import('./pages/History').then((m) => ({ default: m.HistoryPage })))
+const IOCsPage = lazy(() => import('./pages/IOCs').then((m) => ({ default: m.IOCsPage })))
+const InvestigationsPage = lazy(() =>
+  import('./pages/Investigations').then((m) => ({ default: m.InvestigationsPage })),
+)
+const InvestigationWorkspacePage = lazy(() =>
+  import('./pages/InvestigationWorkspacePage').then((m) => ({ default: m.InvestigationWorkspacePage })),
+)
+const WatchlistPage = lazy(() =>
+  import('./pages/Watchlist').then((m) => ({ default: m.WatchlistPage })),
+)
+const Reports = lazy(() => import('./pages/Reports').then((m) => ({ default: m.Reports })))
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
 
 const router = createBrowserRouter([
   {
